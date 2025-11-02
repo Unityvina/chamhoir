@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mạng Lưới Kinh Doanh Việc Làm</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f4f4f4; color: #333; transition: background 0.3s; }
+        .dark { background: #333; color: #f4f4f4; }
+        header { text-align: center; margin-bottom: 20px; }
+        #toggle { padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .phone-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .phone-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .dark .phone-card { background: #444; }
+        .phone-card:hover { transform: scale(1.05); }
+        .phone-number { font-size: 1.2em; font-weight: bold; color: #007bff; }
+        .role { color: #666; margin: 5px 0; }
+        button.call { background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        canvas { max-width: 100%; height: 300px; background: white; border-radius: 8px; padding: 10px; }
+        .dark canvas { background: #444; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Mối Quan Hệ Kinh Doanh Của 4 Số Điện Thoại</h1>
+        <button id="toggle">Chuyển Dark Mode</button>
+    </header>
+    
+    <section class="phone-list">
+        <div class="phone-card">
+            <div class="phone-number">038-632-8402</div>
+            <div class="role">Giới thiệu việc làm chính (Lead Gen)</div>
+            <button class="call" onclick="call('0386328402')">Gọi Ngay</button>
+        </div>
+        <div class="phone-card">
+            <div class="phone-number">0374 685 564</div>
+            <div class="role">Xử lý kinh doanh & hợp đồng (B2B)</div>
+            <button class="call" onclick="call('0374685564')">Gọi Ngay</button>
+        </div>
+        <div class="phone-card">
+            <div class="phone-number">0366 731 188</div>
+            <div class="role">Giới thiệu việc làm phụ (Hỗ trợ)</div>
+            <button class="call" onclick="call('0366731188')">Gọi Ngay</button>
+        </div>
+        <div class="phone-card">
+            <div class="phone-number">0397686765</div>
+            <div class="role">Theo dõi & báo cáo (Closing)</div>
+            <button class="call" onclick="call('0397686765')">Gọi Ngay</button>
+        </div>
+    </section>
+    
+    <section>
+        <h2>Biểu Đồ Mạng Lưới Quan Hệ</h2>
+        <canvas id="networkChart"></canvas>
+    </section>
+
+    <script>
+        // Toggle Dark/Light Mode
+        const toggle = document.getElementById('toggle');
+        toggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+        });
+
+        // Call Function (Mô phỏng gọi điện)
+        function call(number) {
+            window.location.href = `tel:${number}`;
+        }
+
+        // Chart.js: Radar Chart minh họa kết nối (điểm số giả định cho mức độ liên kết 1-10)
+        const ctx = document.getElementById('networkChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Liên Kết Với Số 1', 'Liên Kết Với Số 2', 'Liên Kết Với Số 3', 'Liên Kết Với Số 4', 'Tổng Doanh Thu'],
+                datasets: [{
+                    label: 'Mức Độ Kết Nối',
+                    data: [10, 8, 9, 7, 8.5],
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                scales: {
+                    r: { beginAtZero: true, max: 10 }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
