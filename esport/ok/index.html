@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công Cụ Chuẩn Hóa Dữ Liệu Tướng LoL</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --primary-color: #2c3e50;
+            --accent-color: #2980b9;
+            --success-color: #27ae60;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .wrapper {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-layout { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 0;
+            margin-bottom: 12px;
+            color: var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        textarea {
+            width: 100%;
+            height: 450px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: none;
+            box-sizing: border-box;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            background-color: #fafafa;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background-color: #fff;
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+            text-align: center;
+        }
+
+        .btn:hover { background-color: #1f6391; }
+        .btn-copy { background-color: var(--success-color); }
+        .btn-copy:hover { background-color: #219653; }
+
+        .note-box {
+            background-color: #e8f4f8;
+            border-left: 4px solid var(--accent-color);
+            padding: 10px 15px;
+            font-size: 13px;
+            border-radius: 0 4px 4px 0;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <h2>Chuẩn Hóa Định Dạng Văn Bản Tướng LoL</h2>
+    
+    <div class="note-box">
+        <strong>Hướng dẫn:</strong> Dán văn bản bài viết thô (ví dụ bài Miss Fortune bạn vừa copy) vào ô bên trái. Nhấn nút <strong>"Xử Lý Chuẩn Hóa"</strong>. Hệ thống sẽ tự động format lại cấu trúc giống hệt định dạng của Cho'Gath. Sau đó bấm <strong>"Copy Kết Quả"</strong> để dán vào trang lưu trữ cá nhân của bạn.
+    </div>
+
+    <div class="grid-layout">
+        <!-- Bên Trái: Nhập Dữ Liệu Thô -->
+        <div class="panel">
+            <div class="panel-title">Dữ liệu thô (Input)</div>
+            <textarea id="raw-input" placeholder="Dán văn bản thô của tướng vào đây..."></textarea>
+            <button class="btn" id="btn-process">Xử Lý Chuẩn Hóa ⚡</button>
+        </div>
+
+        <!-- Bên Phải: Xuất Dữ Liệu Chuẩn Hóa -->
+        <div class="panel">
+            <div class="panel-title">
+                Dữ liệu đã chuẩn hóa (Output)
+                <span id="status-msg" style="font-size:12px; color:var(--success-color); font-weight:normal;"></span>
+            </div>
+            <textarea id="clean-output" readonly placeholder="Kết quả chuẩn hóa cấu trúc sẽ xuất hiện tại đây..."></textarea>
+            <button class="btn btn-copy" id="btn-copy">Copy Kết Quả 📋</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('btn-process').addEventListener('click', () => {
+        const input = document.getElementById('raw-input').value;
+        if (!input.trim()) {
+            alert('Vui lòng nhập dữ liệu trước!');
+            return;
+        }
+
+        // --- Thuật toán bóc tách cấu trúc bằng Regex tinh chỉnh ---
+        
+        // 1. Tìm tên tướng và danh hiệu
+        let champName = "Miss Fortune";
+        let title = "Thợ Săn Tiền Thưởng";
+        const titleMatch = input.match(/^([A-Za-z\s'\.]+)\s*\(([^)]+)\)/);
+        if (titleMatch) {
+            champName = titleMatch[1].trim();
+            title = titleMatch[2].trim();
+        }
+
+        // 2. Trích xuất mô tả chung
+        let description = `${champName} (${title}) là một vị tướng xạ thủ mạnh mẽ trong Liên Minh Huyền Thoại với khả năng dồn sát thương diện rộng diện rộng đột biến.`;
+        const firstParaMatch = input.trim().split('\n')[0];
+        if (firstParaMatch) description = firstParaMatch;
+
+        // 3. Trích xuất chi tiết bộ kỹ năng
+        const extractSkill = (key) => {
+            const regex = new RegExp(`${key}\\s*-\\s*([^\\n]+)(?:\\n\\s*Nội tại:\\s*([^\\n]+))?(?:\\n\\s*Kích hoạt:\\s*([^\\n]+))?`, 'i');
+            const match = input.match(regex);
+            if (match) {
+                let text = match[1].trim();
+                if (match[2]) text += ` [Nội tại: ${match[2].trim()}]`;
+                if (match[3]) text += ` [Kích hoạt: ${match[3].trim()}]`;
+                return text;
+            }
+            // Sửa lỗi tìm kiếm nếu cấu trúc ghi liền dòng
+            const altRegex = new RegExp(`${key}\\s*-\\s*([^:\\n]+):?([^\\n]*)`, 'i');
+            const altMatch = input.match(altRegex);
+            return altMatch ? `${altMatch[1].trim()} ${altMatch[2].trim()}` : "Đang cập nhật...";
+        };
+
+        const skill_P = extractSkill('Nội tại');
+        const skill_Q = extractSkill('Q');
+        const skill_W = extractSkill('W');
+        const skill_E = extractSkill('E');
+        const skill_R = extractSkill('R');
+
+        // 4. Trích xuất Combo & Cách nâng chiêu
+        let skillOrderAndCombo = "Đang cập nhật...";
+        const comboSectionMatch = input.match(/Thứ Tự Nâng Kỹ Năng & Mẹo Cấu Rỉa Đường([\s\S]*?)(?=Lối Lên Đồ & Bảng Ngọc|$)/i);
+        if (comboSectionMatch) {
+            skillOrderAndCombo = comboSectionMatch[1].trim();
+        }
+
+        // 5. Trích xuất Trang bị
+        let itemsSection = "Đang cập nhật...";
+        const itemSectionMatch = input.match(/Lối Lên Đồ & Bảng Ngọc([\s\S]*?)(?=\n[A-Za-z\s]+sẽ trở thành|$)/i);
+        if (itemSectionMatch) {
+            itemsSection = itemSectionMatch[1].trim();
+        }
+
+        // 6. Trích xuất câu hỏi tương tác cuối bài
+        let interactionQuestion = `Bạn muốn chơi ${champName} theo thiên hướng Sát lực hay Chí mạng để mình tư vấn bảng ngọc tối ưu?`;
+        const lastLines = input.trim().split('\n');
+        const finalLine = lastLines[lastLines.length - 1];
+        if (finalLine && finalLine.includes('?')) {
+            interactionQuestion = finalLine;
+        }
+
+        // --- ĐỔ DỮ LIỆU VÀO TEMPLATE ĐỒNG BỘ ĐÃ FORMAT SẴN ---
+        const formattedTemplate = `${champName} (${title}) ${description.replace(titleMatch ? titleMatch[0] : "", "").trim()} [1, 2]
+
+Bộ Kỹ Năng Của ${champName}
+Chi tiết bộ kỹ năng định hình lối chơi của ${champName} bao gồm: [3]
+
+Nội tại - ${skill_P} [1, 2, 4, 5]
+Q - ${skill_Q} [1, 3]
+W - ${skill_W} [2, 3]
+E - ${skill_E} [6]
+R - ${skill_R} [1, 2, 3, 5, 7]
+
+Cách Nâng Kỹ Năng & Combo
+${skillOrderAndCombo}
+
+Trang Bị Khuyên Dùng
+Bạn có thể tham khảo thêm các chỉ số và trang bị cập nhật tại OP.GG ${champName} hoặc GGmeo ${champName}: [2, 5, 8]
+
+${itemsSection}
+
+${interactionQuestion}
+
+[1] https://www.leagueoflegends.com
+[2] https://www.thegioididong.com
+[3] https://metabot.gg
+[4] https://www.metasrc.com
+[5] https://ggmeo.com
+[6] https://gamek.vn
+[7] https://lienminh.fandom.com
+[8] https://op.gg`;
+
+        document.getElementById('clean-output').value = formattedTemplate;
+        document.getElementById('status-msg').textContent = "Đã chuẩn hóa cấu trúc thành công!";
+    });
+
+    // Xử lý tự động Copy nhanh kết quả
+    document.getElementById('btn-copy').addEventListener('click', () => {
+        const outputText = document.getElementById('clean-output');
+        if (!outputText.value) return;
+        
+        outputText.select();
+        navigator.clipboard.writeText(outputText.value);
+        
+        const status = document.getElementById('status-msg');
+        status.textContent = "📋 Đã copy vào bộ nhớ đệm!";
+        setTimeout(() => status.textContent = "", 2000);
+    });
+</script>
+</body>
+</html>
