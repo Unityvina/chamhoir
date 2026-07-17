@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Dữ Liệu Tướng LoL - Cá Nhân</title>
+    <style>
+        :root {
+            --primary-color: #1f232a;
+            --accent-color: #c8aa6e; /* Màu vàng đặc trưng của LoL */
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        h1 { margin: 0; color: var(--primary-color); font-size: 24px; }
+
+        button {
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-google {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-google:hover { background-color: #eee; }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--accent-color);
+            color: var(--primary-color);
+        }
+
+        .btn-logout {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content { grid-template-columns: 1fr; }
+        }
+
+        .box {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        textarea {
+            width: 100%;
+            height: 250px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            font-family: inherit;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+        }
+
+        /* Danh mục tướng */
+        .champion-item {
+            border-left: 4px solid var(--accent-color);
+            background: #fafafa;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 0 4px 4px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .champion-name {
+            font-weight: bold;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .champion-name:hover { text-decoration: underline; }
+
+        .counter-badge {
+            background: var(--primary-color);
+            color: var(--accent-color);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .hidden { display: none !important; }
+        
+        /* Modal xem chi tiết nội dung đã dán */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white; padding: 25px; border-radius: 8px;
+            max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;
+            position: relative;
+        }
+        .close-modal {
+            position: absolute; top: 10px; right: 15px;
+            font-size: 24px; cursor: pointer;
+        }
+        .pre-wrap { white-space: pre-wrap; word-wrap: break-word; font-size: 14px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- KHU VỰC HEADER -->
+    <header>
+        <h1>LoL Data Notebook</h1>
+        <div id="auth-section">
+            <button class="btn-google" id="btn-login">
+                <img src="https://docs.gandi.net/en/_images/google_logo.png" width="16" alt="Google"> Đăng nhập với Google
+            </button>
+        </div>
+        <div id="user-section" class="hidden">
+            <div class="user-info">
+                <img id="user-avatar" class="user-avatar" src="" alt="Avatar">
+                <span id="user-name"></span>
+                <button class="btn-logout" id="btn-logout">Đăng xuất</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- TRẠNG THÁI CHƯA ĐĂNG NHẬP -->
+    <div id="guest-view" style="text-align: center; margin-top: 50px;">
+        <h3>Vui lòng đăng nhập để lưu trữ dữ liệu tướng riêng tư của bạn.</h3>
+    </div>
+
+    <!-- KHU VỰC CHÍNH KHI ĐÃ ĐĂNG NHẬP -->
+    <div id="app-view" class="main-content hidden">
+        <!-- Bên trái: Ô dán dữ liệu -->
+        <div class="box">
+            <h3>Dán dữ liệu tướng tại đây</h3>
+            <p style="font-size: 12px; color: #666;">Hệ thống tự động nhận diện tên tướng ở dòng đầu tiên (Ví dụ: Cho'Gath...)</p>
+            <textarea id="data-input" placeholder="Dán nội dung bài viết về tướng vào đây..."></textarea>
+            <button class="btn-submit" id="btn-save">Lưu & Tăng Bộ Đếm</button>
+        </div>
+
+        <!-- Bên phải: Danh mục & Bộ đếm -->
+        <div class="box">
+            <h3>Danh mục đã lưu dữ liệu</h3>
+            <div id="champion-list">
+                <p style="color: #88px; font-style: italic;">Chưa có dữ liệu tướng nào được lưu.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL XEM CHI TIẾT -->
+<div id="detail-modal" class="modal hidden">
+    <div class="modal-content">
+        <span class="close-modal" id="btn-close-modal">&times;</span>
+        <h2 id="modal-title" style="color: var(--primary-color); border-bottom: 1px solid #ddd; padding-bottom: 10px;"></h2>
+        <div id="modal-body" class="pre-wrap"></div>
+    </div>
+</div>
+
+<!-- SCRIPT XỬ LÝ (FIREBASE V9+) -->
+<script type="module">
+    // Import các hàm cần thiết từ CDN
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    // Cấu hình Firebase của bạn
+    const firebaseConfig = {
+      apiKey: "AIzaSyDcHZ1RIALvsXC7iRey5y-8ek-j8bFP82U",
+      authDomain: "proxyinternetcave.firebaseapp.com",
+      databaseURL: "https://proxyinternetcave-default-rtdb.firebaseio.com",
+      projectId: "proxyinternetcave",
+      storageBucket: "proxyinternetcave.firebasestorage.app",
+      messagingSenderId: "811924386251",
+      appId: "1:811924386251:web:7ba435fe9c4fb268de464e"
+    };
+
+    // Khởi tạo các dịch vụ
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    // DOM Elements
+    const btnLogin = document.getElementById('btn-login');
+    const btnLogout = document.getElementById('btn-logout');
+    const authSection = document.getElementById('auth-section');
+    const userSection = document.getElementById('user-section');
+    const guestView = document.getElementById('guest-view');
+    const appView = document.getElementById('app-view');
+    const userAvatar = document.getElementById('user-avatar');
+    const userName = document.getElementById('user-name');
+    
+    const dataInput = document.getElementById('data-input');
+    const btnSave = document.getElementById('btn-save');
+    const championList = document.getElementById('champion-list');
+
+    const detailModal = document.getElementById('detail-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalBody = document.getElementById('modal-body');
+    const btnCloseModal = document.getElementById('btn-close-modal');
+
+    let currentUser = null;
+    let unsubscribeSnapshot = null;
+
+    // --- 1. XỬ LÝ ĐĂNG NHẬP / ĐĂNG XUẤT ---
+    btnLogin.addEventListener('click', () => {
+        signInWithPopup(auth, provider).catch(error => alert("Đăng nhập thất bại: " + error.message));
+    });
+
+    btnLogout.addEventListener('click', () => {
+        if(unsubscribeSnapshot) unsubscribeSnapshot(); // Huỷ lắng nghe dữ liệu khi thoát
+        signOut(auth);
+    });
+
+    // Theo dõi trạng thái đăng nhập
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            currentUser = user;
+            // Hiển thị UI user
+            authSection.classList.add('hidden');
+            userSection.classList.remove('hidden');
+            guestView.classList.add('hidden');
+            appView.classList.remove('hidden');
+            
+            userAvatar.src = user.photoURL || 'https://via.placeholder.com/35';
+            userName.textContent = user.displayName;
+
+            // Tải danh mục dữ liệu của riêng User này
+            loadUserChampions(user.uid);
+        } else {
+            currentUser = null;
+            authSection.classList.remove('hidden');
+            userSection.classList.add('hidden');
+            guestView.classList.remove('hidden');
+            appView.classList.add('hidden');
+            championList.innerHTML = '';
+        }
+    });
+
+    // --- 2. XỬ LÝ TRÍCH XUẤT TÊN TƯỚNG TỪ VĂN BẢN DÁN VÀO ---
+    function extractChampionName(text) {
+        if (!text.trim()) return null;
+        // Lấy dòng đầu tiên của đoạn văn bản dán vào
+        const firstLine = text.trim().split('\n')[0];
+        
+        // Tìm chữ viết hoa đầu tiên hoặc trước dấu ngoặc đơn (Ví dụ: Cho'Gath (Quái Vật Hư Không)... -> Lấy Cho'Gath)
+        const match = firstLine.match(/^([A-Za-z0-9'\s\.\-]+)/);
+        if (match) {
+            return match[1].replace(/\(.*\)/, '').trim(); 
+        }
+        return "Tướng Ẩn Danh";
+    }
+
+    // --- 3. LƯU DỮ LIỆU VÀ TĂNG BỘ ĐẾM RIÊNG TƯ ---
+    btnSave.addEventListener('click', async () => {
+        const rawContent = dataInput.value;
+        if (!rawContent.trim()) {
+            alert("Vui lòng dán nội dung vào ô trống!");
+            return;
+        }
+
+        const champName = extractChampionName(rawContent);
+        if (!champName) return;
+
+        try {
+            // Đường dẫn document: users/{userId}/champions/{champName} -> Bảo mật hoàn toàn theo ID người dùng
+            const champDocRef = doc(db, "users", currentUser.uid, "champions", champName);
+            
+            // Lưu dữ liệu & tăng bộ đếm lên +1 mỗi lần dán trùng tên tướng
+            await setDoc(champDocRef, {
+                name: champName,
+                content: rawContent,
+                count: increment(1),
+                updatedAt: new Date()
+            }, { merge: true });
+
+            alert(`Đã lưu thành công danh mục cho tướng: ${champName}!`);
+            dataInput.value = ''; // Xóa sạch khung nhập liệu sau khi lưu thành công
+        } catch (error) {
+            console.error("Lỗi lưu dữ liệu:", error);
+            alert("Không thể lưu dữ liệu cá nhân. Hãy kiểm tra cấu hình Rule Firestore của bạn.");
+        }
+    });
+
+    // --- 4. LẮNG NGHE & HIỂN THỊ DANH MỤC THEO USER TIME-REAL ---
+    function loadUserChampions(uid) {
+        const userChampsRef = collection(db, "users", uid, "champions");
+        
+        // Lắng nghe thay đổi liên tục từ Firestore
+        unsubscribeSnapshot = onSnapshot(userChampsRef, (snapshot) => {
+            if(snapshot.empty) {
+                championList.innerHTML = '<p style="color: #888; font-style: italic;">Chưa có dữ liệu tướng nào được lưu.</p>';
+                return;
+            }
+
+            championList.innerHTML = '';
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                
+                // Tạo element dòng tướng trong danh mục
+                const div = document.createElement('div');
+                div.className = 'champion-item';
+                div.innerHTML = `
+                    <span class="champion-name" data-id="${doc.id}">${data.name}</span>
+                    <span class="counter-badge">Đã dán: ${data.count || 1} lần</span>
+                `;
+                
+                // Sự kiện khi click vào tên tướng sẽ hiển thị Modal xem lại nội dung
+                div.querySelector('.champion-name').addEventListener('click', () => {
+                    openModal(data.name, data.content);
+                });
+
+                championList.appendChild(div);
+            });
+        });
+    }
+
+    // --- 5. MODAL CHI TIẾT ---
+    function openModal(title, body) {
+        modalTitle.textContent = title;
+        modalBody.textContent = body;
+        detailModal.classList.remove('hidden');
+    }
+
+    btnCloseModal.addEventListener('click', () => {
+        detailModal.classList.add('hidden');
+    });
+
+    // Tự đóng modal nếu click ra ngoài vùng trắng
+    window.addEventListener('click', (e) => {
+        if (e.target == detailModal) {
+            detailModal.classList.add('hidden');
+        }
+    });
+</script>
+</body>
+</html>
