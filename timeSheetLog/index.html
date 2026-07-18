@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thống Kê Công Việc</title>
+  <!-- Tailwind CSS để giao diện đẹp, hiện đại -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <!-- FontAwesome để chèn các icon dễ nhìn -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Chỉnh sửa nhỏ cho các input time trên mobile mượt hơn */
+    input[type="datetime-local"] {
+      appearance: none;
+      -webkit-appearance: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen font-sans">
+
+  <!-- Thống báo trạng thái -->
+  <div id="toast" class="fixed top-4 right-4 z-50 transform translate-x-full transition-transform duration-300 bg-emerald-500 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 hidden">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="toast-msg">Thành công!</span>
+  </div>
+
+  <!-- Giao diện Đăng Nhập (Ẩn khi đã đăng nhập) -->
+  <div id="auth-container" class="flex flex-col items-center justify-center min-h-screen px-4">
+    <div class="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full text-center border border-slate-100">
+      <div class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-indigo-600 text-2xl">
+        <i class="fa-solid fa-business-time"></i>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900 mb-2">Nhật Ký Công Việc</h1>
+      <p class="text-slate-500 text-sm mb-6">Đăng nhập bằng tài khoản Google của bạn để bắt đầu lưu trữ và thống kê công việc hàng ngày.</p>
+      
+      <button id="btn-login" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-700 font-medium py-3 px-4 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition-all cursor-pointer shadow-sm">
+        <svg class="w-5 h-5" viewBox="0 0 24 24">
+          <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l3.327-3.2A12.74 12.74 0 0 0 12.24 0C5.58 0 0 5.37 0 12s5.58 12 12.24 12c6.96 0 11.57-4.83 11.57-11.64 0-.79-.085-1.4-.195-2.075H12.24z"/>
+        </svg>
+        <span>Đăng nhập với Google</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Giao diện Chính (Hiện khi đã đăng nhập) -->
+  <div id="main-container" class="hidden pb-12">
+    <!-- Navbar Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+      <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-2 font-bold text-lg text-indigo-600">
+          <i class="fa-solid fa-chart-pie text-xl"></i>
+          <span>WorkStats</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 text-sm text-slate-600 bg-slate-100 py-1.5 px-3 rounded-full">
+            <img id="user-avatar" src="" alt="Avatar" class="w-5 h-5 rounded-full hidden">
+            <span id="user-name" class="font-medium max-w-[120px] truncate">Người dùng</span>
+          </div>
+          <button id="btn-logout" class="text-slate-400 hover:text-red-500 p-2 transition-colors cursor-pointer" title="Đăng xuất">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <!-- Cột trái: Form nhập công việc -->
+      <section class="md:col-span-1">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 sticky top-22">
+          <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-plus text-indigo-500"></i> Thêm việc mới
+          </h2>
+          
+          <form id="job-form" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tên công việc / Nội dung</label>
+              <div class="relative">
+                <i class="fa-solid fa-pen-to-square absolute left-3 top-3.5 text-slate-400 text-sm"></i>
+                <input type="text" id="job-title" required placeholder="Ví dụ: Họp phòng, Fix bug UI..." 
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-9 pr-3 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-all">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Bắt đầu</label>
+              <div class="relative">
+                <i class="fa-solid fa-calendar-plus absolute left-3 top-3.5 text-slate-400 text-sm"></i>
+                <input type="datetime-local" id="job-start" required 
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-9 pr-3 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-all">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Kết thúc</label>
+              <div class="relative">
+                <i class="fa-solid fa-calendar-check absolute left-3 top-3.5 text-slate-400 text-sm"></i>
+                <input type="datetime-local" id="job-end" required 
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-9 pr-3 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-all">
+              </div>
+            </div>
+
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium py-3 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-md shadow-indigo-100 text-sm mt-2">
+              <i class="fa-solid fa-circle-plus"></i>
+              <span>Lưu công việc</span>
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Cột phải: Thống kê và Danh sách dữ liệu -->
+      <section class="md:col-span-2 space-y-4">
+        
+        <!-- Widget Thống kê nhanh -->
+        <div class="bg-gradient-to-br from-indigo-600 to-violet-700 text-white p-5 rounded-2xl shadow-md flex items-center justify-between">
+          <div>
+            <p class="text-indigo-100 text-xs font-medium uppercase tracking-widest mb-1">Tổng thời gian ghi nhận</p>
+            <h3 id="stat-total-time" class="text-3xl font-extrabold tracking-tight">0 phút</h3>
+          </div>
+          <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-xl backdrop-blur-md">
+            <i class="fa-solid fa-hourglass-half animate-pulse"></i>
+          </div>
+        </div>
+
+        <!-- Danh sách việc -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+          <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-slate-500"></i> Lịch sử công việc
+            </h2>
+            <span id="stat-count" class="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-indigo-100">0 việc</span>
+          </div>
+
+          <!-- List Container -->
+          <div id="job-list" class="divide-y divide-slate-100 max-h-[60vh] overflow-y-auto">
+            <!-- Trạng thái trống -->
+            <div id="empty-state" class="py-12 px-4 text-center text-slate-400">
+              <i class="fa-solid fa-folder-open text-3xl mb-2 block text-slate-300"></i>
+              <p class="text-sm">Chưa có công việc nào được ghi lại.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+    </main>
+  </div>
+
+  <!-- BẬT SCRIPTS FIREBASE (Sử dụng kiến trúc Modular v9/v10 qua CDN) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // Cấu hình Firebase từ tài khoản của bạn
+    const firebaseConfig = {
+      apiKey: "AIzaSyBNgBnGppYvCc_VAwzsTStul06KlScUDfk",
+      authDomain: "unityvina-1fc51.firebaseapp.com",
+      databaseURL: "https://unityvina-1fc51-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "unityvina-1fc51",
+      storageBucket: "unityvina-1fc51.firebasestorage.app",
+      messagingSenderId: "779062963134",
+      appId: "1:779062963134:web:87268218d34a1cd186a7ef"
+    };
+
+    // Khởi tạo ứng dụng
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const provider = new GoogleAuthProvider();
+
+    // Các phần tử DOM
+    const authContainer = document.getElementById('auth-container');
+    const mainContainer = document.getElementById('main-container');
+    const btnLogin = document.getElementById('btn-login');
+    const btnLogout = document.getElementById('btn-logout');
+    const userNameEl = document.getElementById('user-name');
+    const userAvatarEl = document.getElementById('user-avatar');
+    
+    const jobForm = document.getElementById('job-form');
+    const jobTitleInput = document.getElementById('job-title');
+    const jobStartInput = document.getElementById('job-start');
+    const jobEndInput = document.getElementById('job-end');
+    
+    const jobListContainer = document.getElementById('job-list');
+    const emptyState = document.getElementById('empty-state');
+    const statTotalTime = document.getElementById('stat-total-time');
+    const statCount = document.getElementById('stat-count');
+
+    let currentUser = null;
+
+    // --- Xử lý Đăng Nhập / Đăng Xuất ---
+    btnLogin.addEventListener('click', () => {
+      signInWithPopup(auth, provider).catch(err => showToast("Đăng nhập thất bại: " + err.message, false));
+    });
+
+    btnLogout.addEventListener('click', () => {
+      signOut(auth).then(() => showToast("Đã đăng xuất")).catch(err => console.error(err));
+    });
+
+    // Quản lý trạng thái đăng nhập người dùng
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        userNameEl.textContent = user.displayName || "Thành viên";
+        if (user.photoURL) {
+          userAvatarEl.src = user.photoURL;
+          userAvatarEl.classList.remove('hidden');
+        }
+        authContainer.classList.add('hidden');
+        mainContainer.classList.remove('hidden');
+        
+        // Đặt giờ mặc định cho input cho tiện lợi (Bắt đầu: hiện tại, Kết thúc: +1 giờ)
+        initDateTimeInputs();
+
+        // Đồng bộ dữ liệu real-time theo UID của user
+        loadUserJobs(user.uid);
+      } else {
+        currentUser = null;
+        authContainer.classList.remove('hidden');
+        mainContainer.classList.add('hidden');
+      }
+    });
+
+    // --- Đọc & Thống kê dữ liệu thực tế ---
+    function loadUserJobs(uid) {
+      const userJobsRef = ref(db, `users/${uid}/jobs`);
+      onValue(userJobsRef, (snapshot) => {
+        // Clear list cũ ngoại trừ template empty state
+        jobListContainer.innerHTML = '';
+        
+        if (!snapshot.exists()) {
+          jobListContainer.appendChild(emptyState);
+          statTotalTime.textContent = "0 phút";
+          statCount.textContent = "0 việc";
+          return;
+        }
+
+        const data = snapshot.val();
+        let totalMinutes = 0;
+        let count = 0;
+
+        // Chuyển object sang array để sắp xếp theo thời gian mới nhất lên đầu
+        const sortedJobs = Object.keys(data).map(key => ({ id: key, ...data[key] }))
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        sortedJobs.forEach(job => {
+          count++;
+          const duration = calculateDuration(job.start, job.end);
+          totalMinutes += duration;
+
+          const itemHtml = document.createElement('div');
+          itemHtml.className = "p-4 hover:bg-slate-50 flex items-start justify-between gap-4 group transition-colors";
+          itemHtml.innerHTML = `
+            <div class="space-y-1">
+              <h4 class="font-semibold text-slate-900 text-sm leading-snug">${escapeHtml(job.title)}</h4>
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+                <span class="flex items-center gap-1"><i class="fa-regular fa-clock text-slate-400"></i> ${formatDateTime(job.start)} → ${formatDateTime(job.end)}</span>
+                <span class="bg-indigo-50 text-indigo-600 font-medium px-1.5 py-0.5 rounded">${formatDurationText(duration)}</span>
+              </div>
+            </div>
+            <button data-id="${job.id}" class="btn-delete text-slate-300 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 max-md:opacity-100 cursor-pointer">
+              <i class="fa-regular fa-trash-can text-sm"></i>
+            </button>
+          `;
+          
+          // Gắn sự kiện xóa cho nút vừa tạo
+          itemHtml.querySelector('.btn-delete').addEventListener('click', (e) => {
+            const jobId = e.currentTarget.getAttribute('data-id');
+            if(confirm("Bạn muốn xoá ghi chú công việc này?")) {
+              remove(ref(db, `users/${uid}/jobs/${jobId}`)).then(() => showToast("Đã xoá thành công"));
+            }
+          });
+
+          jobListContainer.appendChild(itemHtml);
+        });
+
+        // Cập nhật lên Dashboard thống kê
+        statCount.textContent = `${count} việc`;
+        statTotalTime.textContent = formatDurationText(totalMinutes);
+      });
+    }
+
+    // --- Gửi dữ liệu lên Firebase ---
+    jobForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      const title = jobTitleInput.value.trim();
+      const start = jobStartInput.value;
+      const end = jobEndInput.value;
+
+      if (new Date(start) >= new Date(end)) {
+        showToast("Thời gian kết thúc phải lớn hơn thời gian bắt đầu!", false);
+        return;
+      }
+
+      const userJobsRef = ref(db, `users/${currentUser.uid}/jobs`);
+      const newJobRef = push(userJobsRef);
+      
+      set(newJobRef, {
+        title: title,
+        start: start,
+        end: end,
+        createdAt: new Date().toISOString()
+      }).then(() => {
+        showToast("Đã lưu công việc!");
+        jobTitleInput.value = '';
+        initDateTimeInputs(); // Reset time về mặc định mới
+      }).catch(err => {
+        showToast("Lỗi khi lưu: " + err.message, false);
+      });
+    });
+
+    // --- Các hàm tiện ích bổ trợ ---
+    function initDateTimeInputs() {
+      const now = new Date();
+      const oneHourLater = new Date(now.getTime() + (60 * 60 * 1000));
+      
+      jobStartInput.value = now.toISOString().slice(0, 16);
+      jobEndInput.value = oneHourLater.toISOString().slice(0, 16);
+    }
+
+    function calculateDuration(startStr, endStr) {
+      const diffMs = new Date(endStr) - new Date(startStr);
+      return Math.max(0, Math.floor(diffMs / 1000 / 60)); // trả về số phút
+    }
+
+    function formatDurationText(totalMin) {
+      if (totalMin < 60) return `${totalMin} phút`;
+      const hours = Math.floor(totalMin / 60);
+      const mins = totalMin % 60;
+      return mins > 0 ? `${hours} giờ ${mins} phút` : `${hours} giờ`;
+    }
+
+    function formatDateTime(dateTimeStr) {
+      const d = new Date(dateTimeStr);
+      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function showToast(message, isSuccess = true) {
+      const toast = document.getElementById('toast');
+      const msgSpan = document.getElementById('toast-msg');
+      
+      msgSpan.textContent = message;
+      if (isSuccess) {
+        toast.className = toast.className.replace('bg-rose-500', 'bg-emerald-500');
+      } else {
+        toast.className = toast.className.replace('bg-emerald-500', 'bg-rose-500');
+      }
+      
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.remove('translate-x-full'), 10);
+      
+      setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+      }, 3000);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
