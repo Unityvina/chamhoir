@@ -3,296 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LoL Data Dashboard - Lưu Trữ Tướng</title>
-    <!-- Favicon SVG cao cấp của LoL (Không lo chết link ảnh) -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23c8aa6e'%3E%3Cpath d='M12 2L2 22h20L12 2zm0 3.99L18.53 19H5.47L12 5.99zM11 11h2v4h-2v-4zm0 5h2v2h-2v-2z'/%3E%3C/svg%3E">
+    <title>OmniData Dashboard - Kho Lưu Trữ Cá Nhân</title>
+    <!-- Favicon Dynamic -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300adb5'%3E%3Cpath d='M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z'/%3E%3C/svg%3E">
     
     <style>
         :root {
-            --sidebar-width: 320px;
-            --primary-dark: #0f1215;
-            --panel-bg: #191d24;
-            --accent-gold: #c8aa6e;
-            --accent-gold-hover: #e0c287;
-            --body-bg: #0a0c0e;
-            --text-main: #f0f1f2;
-            --text-muted: #8a929b;
-            --border-color: #2a313a;
-            --danger: #e74c3c;
+            --sidebar-width: 340px;
+            --bg-darker: #0d1117;
+            --bg-panel: #161b22;
+            --bg-body: #010409;
+            --color-teal: #58a6ff;
+            --color-teal-hover: #1f6feb;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --border-dark: #30363d;
+            --color-danger: #f85149;
+            --color-success: #2ea44f;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--body-bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
             color: var(--text-main);
             height: 100vh;
             display: flex;
             overflow: hidden;
         }
 
-        /* --- LAYOUT CHÍNH: DASHBOARD SIDEBAR TÁCH BẠCH --- */
+        /* --- SIDEBAR LAYOUT --- */
         .sidebar {
             width: var(--sidebar-width);
-            background-color: var(--primary-dark);
-            border-right: 1px solid var(--border-color);
+            background-color: var(--bg-darker);
+            border-right: 1px solid var(--border-dark);
             display: flex;
             flex-direction: column;
             height: 100%;
-            z-index: 10;
         }
 
-        .main-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            background-color: var(--body-bg);
+        .brand-zone {
+            padding: 24px 20px;
+            border-bottom: 1px solid var(--border-dark);
         }
+        .brand-zone h1 { font-size: 18px; color: #fff; font-weight: 600; letter-spacing: 0.5px; }
 
-        /* --- HEADER & USER INFO --- */
-        .brand-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .brand-header h1 {
-            font-size: 18px;
-            color: var(--accent-gold);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .user-widget {
+        .user-profile {
             padding: 15px 20px;
-            background-color: #14181d;
-            border-bottom: 1px solid var(--border-color);
+            background-color: rgba(22, 27, 34, 0.5);
+            border-bottom: 1px solid var(--border-dark);
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
+        .user-details { display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border-dark); }
+        .user-email { font-size: 12px; color: var(--text-muted); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        .user-meta { display: flex; align-items: center; gap: 10px; }
-        .user-avatar { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--accent-gold); }
-        .user-name { font-size: 13px; font-weight: 600; color: var(--text-main); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-        /* --- SEARCH & LIST TƯỚNG (BẢO ĐẢM TỐC ĐỘ CHẠY MƯỢT) --- */
-        .search-container { padding: 15px 20px; }
-        .search-input {
+        .search-box { padding: 15px 20px; }
+        .input-text {
             width: 100%;
             padding: 10px 14px;
-            background: #1e232a;
-            border: 1px solid var(--border-color);
+            background-color: var(--bg-body);
+            border: 1px solid var(--border-dark);
             border-radius: 6px;
-            color: var(--text-main);
+            color: #fff;
             font-size: 13px;
         }
-        .search-input:focus { outline: 1px solid var(--accent-gold); }
+        .input-text:focus { outline: 1px solid var(--color-teal); border-color: transparent; }
 
-        .champion-list-wrapper {
+        .data-list-scroll {
             flex: 1;
             overflow-y: auto;
             padding: 0 15px 20px 15px;
         }
-        /* Tùy biến thanh cuộn mượt mà tốc độ cao */
-        .champion-list-wrapper::-webkit-scrollbar { width: 5px; }
-        .champion-list-wrapper::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        .data-list-scroll::-webkit-scrollbar { width: 4px; }
+        .data-list-scroll::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 4px; }
 
-        .champ-card {
-            background-color: var(--panel-bg);
-            border: 1px solid transparent;
-            padding: 12px 15px;
+        .data-card {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-dark);
+            padding: 14px;
             border-radius: 6px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.15s ease-in-out;
+            transition: border-color 0.15s, background-color 0.15s;
         }
-        .champ-card:hover { border-color: var(--accent-gold); background: #202630; }
-        .champ-card.active { background: #252d3a; border-color: var(--accent-gold); }
-        
-        .champ-info-name { font-weight: 600; font-size: 14px; color: var(--text-main); }
-        .badge-count {
-            font-size: 11px;
-            background: rgba(200, 170, 110, 0.15);
-            color: var(--accent-gold);
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-weight: bold;
+        .data-card:hover { border-color: #8b949e; background-color: #21262d; }
+        .data-card.active { border-color: var(--color-teal); background-color: #1f2937; }
+        .card-header-flex { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+        .card-title { font-weight: 600; font-size: 14px; color: #fff; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .card-preview { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .counter-group { display: flex; gap: 6px; font-size: 10px; font-weight: bold; margin-top: 8px; }
+        .badge { padding: 2px 6px; border-radius: 4px; }
+        .badge-update { background-color: rgba(88, 166, 255, 0.15); color: var(--color-teal); }
+        .badge-view { background-color: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+
+        /* --- MAIN WORKSPACE LAYOUT --- */
+        .workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background-color: var(--bg-body);
         }
 
-        /* --- KHU VỰC THAO TÁC CRUD CHÍNH (MAIN WORKSPACE) --- */
-        .workspace-header {
+        .top-nav {
             padding: 20px 40px;
-            border-bottom: 1px solid var(--border-color);
-            background-color: var(--primary-dark);
+            border-bottom: 1px solid var(--border-dark);
+            background-color: var(--bg-darker);
             display: flex;
             justify-content: space-between;
             align-items: center;
             min-height: 73px;
         }
 
-        .workspace-content {
-            flex: 1;
-            padding: 40px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
+        .view-port { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; }
 
-        .crud-box {
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 25px;
-        }
-
-        /* --- BUTTONS & CONTROLS --- */
-        button {
-            padding: 9px 16px;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-            border: none;
-        }
-        button:hover { opacity: 0.9; }
-
-        .btn-gold { background-color: var(--accent-gold); color: var(--primary-dark); }
-        .btn-gold:hover { background-color: var(--accent-gold-hover); }
-        .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
-        .btn-outline:hover { background: #1e232a; }
-        .btn-danger { background-color: var(--danger); color: white; }
-
-        textarea {
+        /* --- FORM ELEMENTS & INTERFACES --- */
+        .editor-container { background-color: var(--bg-panel); border: 1px solid var(--border-dark); border-radius: 8px; padding: 30px; display: flex; flex-direction: column; gap: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: var(--text-main); }
+        
+        textarea.main-editor {
             width: 100%;
-            height: calc(100vh - 360px);
-            min-height: 250px;
-            background-color: #111418;
-            border: 1px solid var(--border-color);
+            height: calc(100vh - 380px);
+            min-height: 300px;
+            background-color: var(--bg-body);
+            border: 1px solid var(--border-dark);
             border-radius: 6px;
             padding: 15px;
-            color: var(--text-main);
-            font-family: inherit;
+            color: #fff;
+            font-family: 'Fira Code', Consolas, Monaco, monospace;
             font-size: 14px;
             line-height: 1.6;
             resize: none;
         }
-        textarea:focus { outline: 1px solid var(--accent-gold); }
+        textarea.main-editor:focus { outline: 1px solid var(--color-teal); }
 
-        /* --- CHẾ ĐỘ XEM CHI TIẾT --- */
-        .view-mode-title { font-size: 24px; color: var(--accent-gold); margin-bottom: 15px; }
-        .view-mode-text { white-space: pre-wrap; line-height: 1.7; font-size: 15px; color: #d1d5db; }
-        .action-bar { display: flex; gap: 12px; margin-top: 15px; justify-content: flex-end; }
+        .viewer-container { background-color: var(--bg-panel); border: 1px solid var(--border-dark); border-radius: 8px; padding: 30px; }
+        .viewer-title { font-size: 26px; font-weight: bold; color: #fff; margin-bottom: 20px; border-bottom: 1px solid var(--border-dark); padding-bottom: 15px; }
+        .viewer-content { white-space: pre-wrap; word-wrap: break-word; font-size: 15px; line-height: 1.7; color: #e6edf3; }
 
-        /* --- GUEST VIEW / LOADING TẠO TRẢI NGHIỆM TỐC ĐỘ --- */
-        .centered-state {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100%; text-align: center; padding: 40px; color: var(--text-muted);
-        }
-        .centered-state h2 { color: var(--accent-gold); margin-bottom: 10px; font-weight: 400; }
+        /* --- CONTROL BUTTONS --- */
+        button { padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; transition: background-color 0.1s; }
+        .btn-teal { background-color: var(--color-teal); color: #0d1117; }
+        .btn-teal:hover { background-color: #2f81f7; color: #fff; }
+        .btn-sec { background-color: #21262d; border: 1px solid var(--border-dark); color: var(--text-main); }
+        .btn-sec:hover { background-color: #30363d; border-color: #8b949e; }
+        .btn-danger { background-color: transparent; color: var(--color-danger); border: 1px solid rgba(248,81,73,0.3); }
+        .btn-danger:hover { background-color: var(--color-danger); color: white; }
+
+        .btn-group-right { display: flex; justify-content: flex-end; gap: 12px; }
+
+        .center-notice { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); text-align: center; }
+        .center-notice h2 { color: #fff; margin-bottom: 8px; font-weight: 500; }
 
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- SIDEBAR: QUẢN LÝ DANH MỤC & TÌM KIẾM -->
+    <!-- SIDEBAR CONTROL -->
     <aside class="sidebar">
-        <div class="brand-header">
-            <h1>LoL Data Pro</h1>
+        <div class="brand-zone">
+            <h1>OmniData Vault 🔐</h1>
         </div>
 
-        <!-- Trạng thái User -->
-        <div id="auth-zone">
-            <div style="padding: 20px; text-align: center;">
-                <button class="btn-gold" id="btn-login" style="width: 100%;">Đăng nhập Google</button>
+        <!-- Khối Đăng Nhập / Profile -->
+        <div id="auth-trigger">
+            <div style="padding: 20px;">
+                <button class="btn-teal" id="btn-login" style="width: 100%;">Đăng nhập với Google</button>
             </div>
         </div>
-        <div id="user-zone" class="user-widget hidden">
-            <div class="user-meta">
-                <img id="user-avatar" class="user-avatar" src="" alt="Avatar">
-                <span id="user-name" class="user-name"></span>
+        <div id="auth-user" class="user-profile hidden">
+            <div class="user-details">
+                <img id="user-avatar" class="avatar" src="" alt="Avatar">
+                <div>
+                    <div id="user-name" style="font-size:13px; font-weight:600; color:#fff;"></div>
+                    <div id="user-email" class="user-email"></div>
+                </div>
             </div>
-            <button class="btn-outline" id="btn-logout" style="padding: 5px 10px; font-size: 11px;">Thoát</button>
+            <button class="btn-sec" id="btn-logout" style="padding: 6px 12px; font-size: 11px;">Thoát</button>
         </div>
 
-        <!-- Tìm kiếm tướng thời gian thực -->
-        <div class="search-container">
-            <input type="text" id="search-bar" class="search-input" placeholder="Tìm nhanh tướng đã lưu...">
+        <!-- Bộ lọc Tìm kiếm Nhanh -->
+        <div class="search-box">
+            <input type="text" id="search-input" class="input-text" placeholder="Tìm kiếm tiêu đề hoặc nội dung...">
         </div>
 
-        <!-- Danh sách tướng tải tốc độ cao -->
-        <div class="champion-list-wrapper" id="champion-list">
+        <!-- Danh sách mục cuộn mượt -->
+        <div class="data-list-scroll" id="data-list-container">
             <!-- Render động bằng JS -->
         </div>
     </aside>
 
-    <!-- MAIN PANEL: KHU VỰC THAO TÁC CRUD TÁCH BẠCH -->
-    <main class="main-panel">
-        
-        <!-- Thanh trạng thái động -->
-        <div class="workspace-header">
-            <div id="workspace-title" style="font-weight: 600; font-size: 15px;">Chào mừng đến với LoL Dashboard</div>
-            <div id="workspace-actions">
-                <button class="btn-gold hidden" id="btn-trigger-add">+ Dán Tướng Mới</button>
+    <!-- CORE WORKSPACE -->
+    <main class="workspace">
+        <div class="top-nav">
+            <div id="nav-title" style="font-weight: 600; font-size: 14px; color: var(--text-muted);">Trạng thái hệ thống</div>
+            <div>
+                <button class="btn-teal hidden" id="btn-create-new">+ Thêm Bản Ghi Mới</button>
             </div>
         </div>
 
-        <!-- Vùng hiển thị nội dung phân bổ động -->
-        <div class="workspace-content" id="workspace-viewport">
+        <div class="view-port" id="main-viewport">
             
-            <!-- Trạng thái chưa Đăng Nhập -->
-            <div id="state-anonymous" class="centered-state">
-                <h2>Bảo mật dữ liệu cá nhân</h2>
-                <p>Vui lòng đăng nhập Google để khởi tạo phân vùng cơ sở dữ liệu riêng tư lớn của riêng bạn.</p>
+            <!-- Trạng thái ẩn danh -->
+            <div id="view-anonymous" class="center-notice">
+                <h2>Không gian lưu trữ mã hóa cá nhân</h2>
+                <p>Vui lòng xác thực Google Mail để hệ thống đồng bộ hóa dữ liệu riêng tư của riêng bạn.</p>
             </div>
 
-            <!-- Trạng thái Đã Đăng Nhập nhưng trống dữ liệu -->
-            <div id="state-empty" class="centered-state hidden">
-                <h2>Phân vùng trống</h2>
-                <p>Bấm nút <b>"+ Dán Tướng Mới"</b> ở góc trên bên phải để bắt đầu lưu trữ.</p>
+            <!-- Trạng thái chưa có dữ liệu -->
+            <div id="view-empty" class="center-notice hidden">
+                <h2>Kho lưu trữ đang trống</h2>
+                <p>Khởi tạo bản ghi đầu tiên bằng cách nhấn nút <b>"+ Thêm Bản Ghi Mới"</b>.</p>
             </div>
 
-            <!-- CHẾ ĐỘ THÊM/SỬA (CREATE/UPDATE BOX) -->
-            <div id="crud-form-block" class="crud-box hidden">
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
-                    Hệ thống nhận diện tự động tên tướng ở dòng thô đầu tiên.
-                </p>
-                <textarea id="data-input" placeholder="Dán hoặc chỉnh sửa văn bản cấu trúc tướng tại đây..."></textarea>
-                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 15px;">
-                    <button class="btn-outline" id="btn-cancel-edit">Hủy bỏ</button>
-                    <button class="btn-gold" id="btn-save">Lưu Vào Database ⚡</button>
+            <!-- GIAO DIỆN EDIT / CREATE -->
+            <div id="view-editor" class="editor-container hidden">
+                <div class="form-group">
+                    <label for="input-title">Tiêu đề / Danh mục phân loại</label>
+                    <input type="text" id="input-title" class="input-text" placeholder="Ví dụ: Cấu hình Server, Code mẫu Python, Nhật ký công việc...">
+                </div>
+                <div class="form-group">
+                    <label for="input-content">Nội dung chi tiết dữ liệu lớn</label>
+                    <textarea id="input-content" class="main-editor" placeholder="Dán bất kỳ chuỗi ký tự nào vào đây..."></textarea>
+                </div>
+                <div class="btn-group-right">
+                    <button class="btn-sec" id="btn-cancel">Hủy</button>
+                    <button class="btn-teal" id="btn-save-data">Xác Nhận Lưu ⚡</button>
                 </div>
             </div>
 
-            <!-- CHẾ ĐỘ XEM (READ MODE) -->
-            <div id="crud-view-block" class="crud-box hidden">
-                <h2 id="view-title" class="view-mode-title"></h2>
-                <div id="view-body" class="view-mode-text"></div>
-                <div class="action-bar">
-                    <button class="btn-outline" id="btn-edit-current">Sửa nội dung</button>
-                    <button class="btn-danger" id="btn-delete-current">Xóa dữ liệu tướng</button>
+            <!-- GIAO DIỆN XEM CHI TIẾT (READ-ONLY) -->
+            <div id="view-reader" class="viewer-container hidden">
+                <h2 id="render-title" class="viewer-title"></h2>
+                <div id="render-body" class="viewer-content"></div>
+                <div class="btn-group-right" style="margin-top: 25px; padding-top: 15px; border-top: 1px solid var(--border-dark);">
+                    <button class="btn-danger" id="btn-delete-data">Xóa Bản Ghi</button>
+                    <button class="btn-sec" id="btn-edit-data">Sửa Dữ Liệu</button>
                 </div>
             </div>
 
         </div>
     </main>
 
-<!-- SCRIPT ENGINE (FIREBASE V9+) -->
+<!-- FIREBASE ENGINE INTEGRATION -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, deleteDoc, collection, query, orderBy, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
+    // Sử dụng nguyên cấu hình Firebase của bạn
     const firebaseConfig = {
       apiKey: "AIzaSyDcHZ1RIALvsXC7iRey5y-8ek-j8bFP82U",
       authDomain: "proxyinternetcave.firebaseapp.com",
@@ -308,223 +274,246 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    // DOM Cột Sidebar
-    const authZone = document.getElementById('auth-zone');
-    const userZone = document.getElementById('user-zone');
+    // DOM Bindings
+    const authTrigger = document.getElementById('auth-trigger');
+    const authUser = document.getElementById('auth-user');
     const userAvatar = document.getElementById('user-avatar');
     const userName = document.getElementById('user-name');
+    const userEmail = document.getElementById('user-email');
     const btnLogin = document.getElementById('btn-login');
     const btnLogout = document.getElementById('btn-logout');
-    const searchBar = document.getElementById('search-bar');
-    const championList = document.getElementById('champion-list');
-
-    // DOM Cột Workspace 
-    const workspaceTitle = document.getElementById('workspace-title');
-    const btnTriggerAdd = document.getElementById('btn-trigger-add');
-    const stateAnonymous = document.getElementById('state-anonymous');
-    const stateEmpty = document.getElementById('state-empty');
-    const crudFormBlock = document.getElementById('crud-form-block');
-    const crudViewBlock = document.getElementById('crud-view-block');
     
-    // DOM Tương tác dữ liệu bên trong Workspace
-    const dataInput = document.getElementById('data-input');
-    const btnSave = document.getElementById('btn-save');
-    const btnCancelEdit = document.getElementById('btn-cancel-edit');
-    const viewTitle = document.getElementById('view-title');
-    const viewBody = document.getElementById('view-body');
-    const btnEditCurrent = document.getElementById('btn-edit-current');
-    const btnDeleteCurrent = document.getElementById('btn-delete-current');
+    const searchInput = document.getElementById('search-input');
+    const dataListContainer = document.getElementById('data-list-container');
+    const navTitle = document.getElementById('nav-title');
+    const btnCreateNew = document.getElementById('btn-create-new');
 
-    let currentUser = null;
-    let unsubscribeSnapshot = null;
-    let localChampionsData = []; // Lưu trữ cache Client-side phục vụ tìm kiếm mượt, không tốn băng thông đọc lại db
-    let activeChampId = null;
+    const viewAnonymous = document.getElementById('view-anonymous');
+    const viewEmpty = document.getElementById('view-empty');
+    const viewEditor = document.getElementById('view-editor');
+    const viewReader = document.getElementById('view-reader');
 
-    // --- KHỞI ĐỘNG AUTHENTICATION ---
+    const inputTitle = document.getElementById('input-title');
+    const inputContent = document.getElementById('input-content');
+    const btnSaveData = document.getElementById('btn-save-data');
+    const btnCancel = document.getElementById('btn-cancel');
+
+    const renderTitle = document.getElementById('render-title');
+    const renderBody = document.getElementById('render-body');
+    const btnEditData = document.getElementById('btn-edit-data');
+    const btnDeleteData = document.getElementById('btn-delete-data');
+
+    // Cấu trúc State của App
+    let userSession = null;
+    let dataDbCache = []; 
+    let selectedId = null;
+    let snapshotListener = null;
+    let viewCounterCache = {}; // Lưu bộ đếm lượt xem tạm thời ở Client giúp tối ưu hóa luồng tải tài nguyên
+
+    // --- XỬ LÝ AUTH STATE ---
     btnLogin.addEventListener('click', () => signInWithPopup(auth, provider));
     btnLogout.addEventListener('click', () => {
-        if(unsubscribeSnapshot) unsubscribeSnapshot();
+        if(snapshotListener) snapshotListener();
         signOut(auth);
     });
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            currentUser = user;
-            authZone.classList.add('hidden');
-            userZone.classList.remove('hidden');
-            stateAnonymous.classList.add('hidden');
-            btnTriggerAdd.classList.remove('hidden');
+            userSession = user;
+            authTrigger.classList.add('hidden');
+            authUser.classList.remove('hidden');
+            viewAnonymous.classList.add('hidden');
+            btnCreateNew.classList.remove('hidden');
             
             userAvatar.src = user.photoURL || '';
             userName.textContent = user.displayName;
+            userEmail.textContent = user.email; // Quản lý tường minh theo Email riêng biệt
 
-            loadDashboardData(user.uid);
+            syncUserDatabase(user.uid);
         } else {
-            currentUser = null;
-            authZone.classList.remove('hidden');
-            userZone.classList.add('hidden');
-            stateAnonymous.classList.remove('hidden');
-            stateEmpty.classList.add('hidden');
-            crudFormBlock.classList.add('hidden');
-            crudViewBlock.classList.add('hidden');
-            btnTriggerAdd.classList.add('hidden');
-            championList.innerHTML = '';
-            workspaceTitle.textContent = "Chào mừng đến với LoL Dashboard";
+            userSession = null;
+            authTrigger.classList.remove('hidden');
+            authUser.classList.add('hidden');
+            viewAnonymous.classList.remove('hidden');
+            viewEmpty.classList.add('hidden');
+            viewEditor.classList.add('hidden');
+            viewReader.classList.add('hidden');
+            btnCreateNew.classList.add('hidden');
+            dataListContainer.innerHTML = '';
+            navTitle.textContent = "Trạng thái hệ thống";
         }
     });
 
-    // --- ĐIỀU HƯỚNG TRẠNG THÁI GIAO DIỆN (UI ROUTER CƠ BẢN) ---
-    function switchWorkspaceView(mode) {
-        stateEmpty.classList.add('hidden');
-        crudFormBlock.classList.add('hidden');
-        crudViewBlock.classList.add('hidden');
+    // --- UI ROUTER QUẢN LÝ VIEW TRẠNG THÁI ---
+    function routeViewTo(mode) {
+        viewEmpty.classList.add('hidden');
+        viewEditor.classList.add('hidden');
+        viewReader.classList.add('hidden');
 
-        if (mode === 'add') {
-            workspaceTitle.textContent = "Tạo Danh Mục Tướng Mới";
-            crudFormBlock.classList.remove('hidden');
-            dataInput.value = '';
-            activeChampId = null;
+        if (mode === 'create') {
+            navTitle.textContent = "Chế độ tạo bản ghi";
+            viewEditor.classList.remove('hidden');
+            inputTitle.value = '';
+            inputContent.value = '';
+            inputTitle.disabled = false;
+            selectedId = null;
         } else if (mode === 'edit') {
-            workspaceTitle.textContent = `Chỉnh sửa dữ liệu: ${activeChampId}`;
-            crudFormBlock.classList.remove('hidden');
-        } else if (mode === 'view') {
-            workspaceTitle.textContent = "Chi tiết dữ liệu lưu trữ";
-            crudViewBlock.classList.remove('hidden');
+            navTitle.textContent = `Đang chỉnh sửa: ${selectedId}`;
+            viewEditor.classList.remove('hidden');
+            inputTitle.disabled = true; // Không cho sửa khóa chính (Tiêu đề) để bảo toàn biến đếm đồng nhất
+        } else if (mode === 'read') {
+            navTitle.textContent = "Chế độ đọc dữ liệu";
+            viewReader.classList.remove('hidden');
         } else if (mode === 'empty') {
-            workspaceTitle.textContent = "Không gian lưu trữ";
-            stateEmpty.classList.remove('hidden');
+            navTitle.textContent = "Không gian dữ liệu";
+            viewEmpty.classList.remove('hidden');
         }
     }
 
-    btnTriggerAdd.addEventListener('click', () => switchWorkspaceView('add'));
-    btnCancelEdit.addEventListener('click', () => {
-        if (activeChampId) switchWorkspaceView('view');
-        else switchWorkspaceView(localChampionsData.length ? 'view' : 'empty');
+    btnCreateNew.addEventListener('click', () => routeViewTo('create'));
+    btnCancel.addEventListener('click', () => {
+        if(selectedId) routeViewTo('read');
+        else routeViewTo(dataDbCache.length ? 'read' : 'empty');
     });
 
-    // --- CƠ CHẾ TRÍCH XUẤT TÊN TƯỚNG TỪ DÒNG ĐẦU ---
-    function extractName(text) {
-        if (!text.trim()) return null;
-        const firstLine = text.trim().split('\n')[0];
-        const match = firstLine.match(/^([A-Za-z0-9'\s\.\-]+)/);
-        return match ? match[1].replace(/\(.*\)/, '').trim() : "Tướng Ẩn Danh";
-    }
+    // --- ĐỒNG BỘ DỮ LIỆU CÁ NHÂN (FIRESTORE REALTIME) ---
+    function syncUserDatabase(uid) {
+        // Phân cấp Collection cô lập: users -> {uid_riêng_biệt} -> dataStorage
+        const userStorageRef = collection(db, "users", uid, "dataStorage");
+        const sortedQuery = query(userStorageRef, orderBy("timestamp", "desc"));
 
-    // --- XỬ LÝ DATABASE TỐC ĐỘ CAO (REALTIME LISTENING) ---
-    function loadDashboardData(uid) {
-        // Tối ưu hóa: Lọc và sắp xếp theo thời gian update để tải các tướng quan trọng trước
-        const userChampsRef = collection(db, "users", uid, "champions");
-        const q = query(userChampsRef, orderBy("updatedAt", "desc"));
-
-        unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
-            localChampionsData = [];
-            championList.innerHTML = '';
-
+        snapshotListener = onSnapshot(sortedQuery, (snapshot) => {
+            dataDbCache = [];
             if (snapshot.empty) {
-                switchWorkspaceView('empty');
+                dataListContainer.innerHTML = '';
+                routeViewTo('empty');
                 return;
             }
 
             snapshot.forEach((doc) => {
-                const data = doc.data();
-                localChampionsData.push({ id: doc.id, ...data });
+                dataDbCache.push({ id: doc.id, ...doc.data() });
             });
 
-            renderSidebarList(localChampionsData);
+            renderListUI(dataDbCache);
 
-            // Tự động giữ vùng hiển thị tướng đang xem hoặc tải tướng mới nhất lên màn hình
-            if (activeChampId) {
-                const currentRecord = localChampionsData.find(c => c.id === activeChampId);
-                if (currentRecord) displayChampionDetails(currentRecord);
-                else switchWorkspaceView('view');
+            // Kiểm soát việc giữ tiêu điểm sau khi Database thay đổi trạng thái
+            if (selectedId) {
+                const matchedRecord = dataDbCache.find(item => item.id === selectedId);
+                if (matchedRecord) updateReaderScreen(matchedRecord);
             } else {
-                activeChampId = localChampionsData[0].id;
-                displayChampionDetails(localChampionsData[0]);
+                selectedId = dataDbCache[0].id;
+                updateReaderScreen(dataDbCache[0]);
             }
+        }, (err) => {
+            console.error("Lỗi đồng bộ phân vùng bảo mật:", err);
         });
     }
 
-    // --- TỐI ƯU RENDER SIDEBAR VÀ SEARCH ENGINE CLIENT-SIDE (KHÔNG ĐỘ TRỄ) ---
-    function renderSidebarList(dataArr) {
-        championList.innerHTML = '';
-        dataArr.forEach(champ => {
-            const div = document.createElement('div');
-            div.className = `champ-card ${activeChampId === champ.id ? 'active' : ''}`;
-            div.innerHTML = `
-                <span class="champ-info-name">${champ.name}</span>
-                <span class="badge-count">${champ.count || 1} lần dán</span>
+    // --- THUẬT TOÁN RENDER & TÌM KIẾM TOÀN VĂN SIÊU TỐC ---
+    function renderListUI(dataArray) {
+        dataListContainer.innerHTML = '';
+        dataArray.forEach(item => {
+            const isActive = selectedId === item.id;
+            const card = document.createElement('div');
+            card.className = `data-card ${isActive ? 'active' : ''}`;
+            
+            // Lấy dòng xem trước của nội dung lớn
+            const textPreview = item.content ? item.content.substring(0, 45) + '...' : '(Trống)';
+            
+            // Khởi tạo biến đếm cục bộ nếu chưa có
+            if(!viewCounterCache[item.id]) viewCounterCache[item.id] = 0;
+
+            card.innerHTML = `
+                <div class="card-header-flex">
+                    <span class="card-title" title="${item.id}">${item.id}</span>
+                </div>
+                <div class="card-preview">${textPreview}</div>
+                <div class="counter-group">
+                    <span class="badge badge-update">Lưu đè: ${item.updateCount || 1} lần</span>
+                    <span class="badge badge-view">Đã xem: ${viewCounterCache[item.id]}</span>
+                </div>
             `;
-            div.addEventListener('click', () => {
-                activeChampId = champ.id;
-                // Highlight item đang click nhanh chóng
-                document.querySelectorAll('.champ-card').forEach(el => el.classList.remove('active'));
-                div.classList.add('active');
-                displayChampionDetails(champ);
+
+            card.addEventListener('click', () => {
+                selectedId = item.id;
+                document.querySelectorAll('.data-card').forEach(el => el.classList.remove('active'));
+                card.classList.add('active');
+                
+                // Tăng bộ đếm lượt xem Client-side ngay lập tức, không tốn tài nguyên mạng
+                viewCounterCache[item.id] += 1;
+                
+                updateReaderScreen(item);
             });
-            championList.appendChild(div);
+
+            dataListContainer.appendChild(card);
         });
     }
 
-    searchBar.addEventListener('input', (e) => {
-        const keyword = e.target.value.toLowerCase().trim();
-        const filtered = localChampionsData.filter(c => c.name.toLowerCase().includes(keyword));
-        renderSidebarList(filtered);
+    // Xử lý tìm kiếm tối ưu hóa tốc độ cao trên bộ nhớ tạm (In-Memory Search)
+    searchInput.addEventListener('input', (e) => {
+        const queryStr = e.target.value.toLowerCase().trim();
+        // Tìm song song cả ở Tiêu đề lẫn Nội dung văn bản lớn bên trong bản ghi
+        const matchResults = dataDbCache.filter(item => 
+            item.id.toLowerCase().includes(queryStr) || 
+            item.content.toLowerCase().includes(queryStr)
+        );
+        renderListUI(matchResults);
     });
 
-    function displayChampionDetails(champ) {
-        viewTitle.textContent = `${champ.name}`;
-        viewBody.textContent = champ.content;
-        switchWorkspaceView('view');
+    function updateReaderScreen(item) {
+        renderTitle.textContent = item.id;
+        renderBody.textContent = item.content;
+        routeViewTo('read');
     }
 
-    // --- CRUD: HÀM LƯU / CẬP NHẬT DỮ LIỆU ---
-    btnSave.addEventListener('click', async () => {
-        const rawContent = dataInput.value;
-        if (!rawContent.trim()) return alert("Vui lòng dán dữ liệu!");
+    // --- CRUD ENGINE: CREATE / UPDATE ---
+    btnSaveData.addEventListener('click', async () => {
+        const titleStr = inputTitle.value.trim();
+        const contentStr = inputContent.value;
 
-        const champName = extractName(rawContent);
-        if (!champName) return;
+        if (!titleStr || !contentStr.trim()) {
+            alert("Vui lòng điền đầy đủ cả tiêu đề lẫn nội dung!");
+            return;
+        }
 
         try {
-            const champDocRef = doc(db, "users", currentUser.uid, "champions", champName);
-            
-            // Nếu đang sửa chính tướng đó thì không tăng biến đếm, nếu dán mới đè lên thì tăng biến đếm
-            const isEditingSameChamp = (activeChampId === champName);
+            const dataDocRef = doc(db, "users", userSession.uid, "dataStorage", titleStr);
+            const isUpdate = (selectedId === titleStr);
 
-            await setDoc(champDocRef, {
-                name: champName,
-                content: rawContent,
-                count: isEditingSameChamp ? increment(0) : increment(1),
-                updatedAt: new Date()
+            await setDoc(dataDocRef, {
+                content: contentStr,
+                updateCount: isUpdate ? increment(1) : increment(0), // Tăng số lần dán đè/sửa đổi lên +1
+                timestamp: new Date()
             }, { merge: true });
 
-            activeChampId = champName; 
-            alert(`Thao tác thành công danh mục: ${champName}`);
-        } catch (error) {
-            alert("Lỗi ghi dữ liệu bảo mật: " + error.message);
+            selectedId = titleStr;
+            alert("Hệ thống đã lưu trữ và đồng bộ hóa thành công!");
+        } catch (err) {
+            alert("Lỗi phân vùng: " + err.message);
         }
     });
 
-    // --- CRUD: HÀM CHỈNH SỬA ---
-    btnEditCurrent.addEventListener('click', () => {
-        const record = localChampionsData.find(c => c.id === activeChampId);
+    // --- CRUD ENGINE: EDIT & DELETE ---
+    btnEditData.addEventListener('click', () => {
+        const record = dataDbCache.find(item => item.id === selectedId);
         if (record) {
-            dataInput.value = record.content;
-            switchWorkspaceView('edit');
+            inputTitle.value = record.id;
+            inputContent.value = record.content;
+            routeViewTo('edit');
         }
     });
 
-    // --- CRUD: HÀM XÓA ---
-    btnDeleteCurrent.addEventListener('click', async () => {
-        if (!activeChampId) return;
-        if (confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn toàn bộ dữ liệu của tướng ${activeChampId}?`)) {
+    btnDeleteData.addEventListener('click', async () => {
+        if (!selectedId) return;
+        if (confirm(`Xác nhận xóa vĩnh viễn danh mục "${selectedId}" khỏi máy chủ?`)) {
             try {
-                const champDocRef = doc(db, "users", currentUser.uid, "champions", activeChampId);
-                await deleteDoc(champDocRef);
-                activeChampId = null;
-                alert("Đã xóa thành công!");
-            } catch (error) {
-                alert("Lỗi khi thực hiện xóa: " + error.message);
+                const dataDocRef = doc(db, "users", userSession.uid, "dataStorage", selectedId);
+                await deleteDoc(dataDocRef);
+                delete viewCounterCache[selectedId]; // Giải phóng bộ nhớ đếm tạm
+                selectedId = null;
+                alert("Đã xóa bản ghi thành công.");
+            } catch (err) {
+                alert("Lỗi xóa bản ghi: " + err.message);
             }
         }
     });
