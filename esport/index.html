@@ -3,266 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniData Dashboard - Kho Lưu Trữ Cá Nhân</title>
-    <!-- Favicon Dynamic -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300adb5'%3E%3Cpath d='M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z'/%3E%3C/svg%3E">
-    
+    <title>OmniData - Bộ Phận Lưu Trữ Mã Hóa</title>
+    <!-- Tải thư viện mã hóa bảo mật CryptoJS mã hóa dữ liệu tại client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
     <style>
         :root {
-            --sidebar-width: 340px;
-            --bg-darker: #0d1117;
-            --bg-panel: #161b22;
-            --bg-body: #010409;
-            --color-teal: #58a6ff;
-            --color-teal-hover: #1f6feb;
-            --text-main: #c9d1d9;
-            --text-muted: #8b949e;
-            --border-dark: #30363d;
-            --color-danger: #f85149;
-            --color-success: #2ea44f;
+            --bg-body: #010409; --bg-panel: #161b22; --border-dark: #30363d;
+            --color-teal: #58a6ff; --text-main: #c9d1d9; --text-muted: #8b949e;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            height: 100vh;
-            display: flex;
-            overflow: hidden;
-        }
-
-        /* --- SIDEBAR LAYOUT --- */
-        .sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--bg-darker);
-            border-right: 1px solid var(--border-dark);
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .brand-zone {
-            padding: 24px 20px;
-            border-bottom: 1px solid var(--border-dark);
-        }
-        .brand-zone h1 { font-size: 18px; color: #fff; font-weight: 600; letter-spacing: 0.5px; }
-
-        .user-profile {
-            padding: 15px 20px;
-            background-color: rgba(22, 27, 34, 0.5);
-            border-bottom: 1px solid var(--border-dark);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .user-details { display: flex; align-items: center; gap: 12px; }
-        .avatar { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border-dark); }
-        .user-email { font-size: 12px; color: var(--text-muted); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-        .search-box { padding: 15px 20px; }
-        .input-text {
-            width: 100%;
-            padding: 10px 14px;
-            background-color: var(--bg-body);
-            border: 1px solid var(--border-dark);
-            border-radius: 6px;
-            color: #fff;
-            font-size: 13px;
-        }
-        .input-text:focus { outline: 1px solid var(--color-teal); border-color: transparent; }
-
-        .data-list-scroll {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0 15px 20px 15px;
-        }
-        .data-list-scroll::-webkit-scrollbar { width: 4px; }
-        .data-list-scroll::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 4px; }
-
-        .data-card {
-            background-color: var(--bg-panel);
-            border: 1px solid var(--border-dark);
-            padding: 14px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: border-color 0.15s, background-color 0.15s;
-        }
-        .data-card:hover { border-color: #8b949e; background-color: #21262d; }
-        .data-card.active { border-color: var(--color-teal); background-color: #1f2937; }
-        .card-header-flex { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
-        .card-title { font-weight: 600; font-size: 14px; color: #fff; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .card-preview { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        .counter-group { display: flex; gap: 6px; font-size: 10px; font-weight: bold; margin-top: 8px; }
-        .badge { padding: 2px 6px; border-radius: 4px; }
-        .badge-update { background-color: rgba(88, 166, 255, 0.15); color: var(--color-teal); }
-        .badge-view { background-color: rgba(56, 189, 248, 0.15); color: #38bdf8; }
-
-        /* --- MAIN WORKSPACE LAYOUT --- */
-        .workspace {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            background-color: var(--bg-body);
-        }
-
-        .top-nav {
-            padding: 20px 40px;
-            border-bottom: 1px solid var(--border-dark);
-            background-color: var(--bg-darker);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            min-height: 73px;
-        }
-
-        .view-port { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; }
-
-        /* --- FORM ELEMENTS & INTERFACES --- */
-        .editor-container { background-color: var(--bg-panel); border: 1px solid var(--border-dark); border-radius: 8px; padding: 30px; display: flex; flex-direction: column; gap: 20px; }
-        .form-group { display: flex; flex-direction: column; gap: 8px; }
-        .form-group label { font-size: 13px; font-weight: 600; color: var(--text-main); }
-        
-        textarea.main-editor {
-            width: 100%;
-            height: calc(100vh - 380px);
-            min-height: 300px;
-            background-color: var(--bg-body);
-            border: 1px solid var(--border-dark);
-            border-radius: 6px;
-            padding: 15px;
-            color: #fff;
-            font-family: 'Fira Code', Consolas, Monaco, monospace;
-            font-size: 14px;
-            line-height: 1.6;
-            resize: none;
-        }
-        textarea.main-editor:focus { outline: 1px solid var(--color-teal); }
-
-        .viewer-container { background-color: var(--bg-panel); border: 1px solid var(--border-dark); border-radius: 8px; padding: 30px; }
-        .viewer-title { font-size: 26px; font-weight: bold; color: #fff; margin-bottom: 20px; border-bottom: 1px solid var(--border-dark); padding-bottom: 15px; }
-        .viewer-content { white-space: pre-wrap; word-wrap: break-word; font-size: 15px; line-height: 1.7; color: #e6edf3; }
-
-        /* --- CONTROL BUTTONS --- */
-        button { padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; transition: background-color 0.1s; }
+        body { font-family: system-ui, sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { background-color: var(--bg-panel); border: 1px solid var(--border-dark); border-radius: 8px; padding: 30px; width: 100%; max-width: 650px; }
+        h2 { margin-bottom: 20px; color: #fff; font-size: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .user-info { font-size: 13px; color: var(--text-muted); text-align: right; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+        label { font-size: 13px; font-weight: 600; }
+        .input-text, .main-editor { width: 100%; padding: 12px; background-color: var(--bg-body); border: 1px solid var(--border-dark); border-radius: 6px; color: #fff; font-size: 14px; }
+        .input-text:focus, .main-editor:focus { outline: 1px solid var(--color-teal); }
+        .main-editor { height: 250px; font-family: monospace; resize: none; }
+        button { width: 100%; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; font-size: 14px; transition: 0.2s; }
         .btn-teal { background-color: var(--color-teal); color: #0d1117; }
-        .btn-teal:hover { background-color: #2f81f7; color: #fff; }
-        .btn-sec { background-color: #21262d; border: 1px solid var(--border-dark); color: var(--text-main); }
-        .btn-sec:hover { background-color: #30363d; border-color: #8b949e; }
-        .btn-danger { background-color: transparent; color: var(--color-danger); border: 1px solid rgba(248,81,73,0.3); }
-        .btn-danger:hover { background-color: var(--color-danger); color: white; }
-
-        .btn-group-right { display: flex; justify-content: flex-end; gap: 12px; }
-
-        .center-notice { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); text-align: center; }
-        .center-notice h2 { color: #fff; margin-bottom: 8px; font-weight: 500; }
-
+        .btn-teal:hover { opacity: 0.9; }
+        .btn-sec { background-color: #21262d; border: 1px solid var(--border-dark); color: var(--text-main); margin-bottom: 15px; }
         .hidden { display: none !important; }
+        .nav-link { display: block; text-align: center; margin-top: 15px; color: var(--color-teal); text-decoration: none; font-size: 13px; }
     </style>
 </head>
 <body>
 
-    <!-- SIDEBAR CONTROL -->
-    <aside class="sidebar">
-        <div class="brand-zone">
-            <h1>OmniData Vault 🔐</h1>
+    <div class="container">
+        <!-- KHỐI XÁC THỰC -->
+        <div id="auth-block">
+            <h2 style="text-align: center; justify-content: center; margin-bottom: 30px;">OmniData - Cổng Lưu Trữ 🔐</h2>
+            <button class="btn-teal" id="btn-login">Đăng nhập bằng Google Mail để mã hóa dữ liệu</button>
         </div>
 
-        <!-- Khối Đăng Nhập / Profile -->
-        <div id="auth-trigger">
-            <div style="padding: 20px;">
-                <button class="btn-teal" id="btn-login" style="width: 100%;">Đăng nhập với Google</button>
-            </div>
-        </div>
-        <div id="auth-user" class="user-profile hidden">
-            <div class="user-details">
-                <img id="user-avatar" class="avatar" src="" alt="Avatar">
-                <div>
-                    <div id="user-name" style="font-size:13px; font-weight:600; color:#fff;"></div>
-                    <div id="user-email" class="user-email"></div>
-                </div>
-            </div>
-            <button class="btn-sec" id="btn-logout" style="padding: 6px 12px; font-size: 11px;">Thoát</button>
-        </div>
-
-        <!-- Bộ lọc Tìm kiếm Nhanh -->
-        <div class="search-box">
-            <input type="text" id="search-input" class="input-text" placeholder="Tìm kiếm tiêu đề hoặc nội dung...">
-        </div>
-
-        <!-- Danh sách mục cuộn mượt -->
-        <div class="data-list-scroll" id="data-list-container">
-            <!-- Render động bằng JS -->
-        </div>
-    </aside>
-
-    <!-- CORE WORKSPACE -->
-    <main class="workspace">
-        <div class="top-nav">
-            <div id="nav-title" style="font-weight: 600; font-size: 14px; color: var(--text-muted);">Trạng thái hệ thống</div>
-            <div>
-                <button class="btn-teal hidden" id="btn-create-new">+ Thêm Bản Ghi Mới</button>
-            </div>
-        </div>
-
-        <div class="view-port" id="main-viewport">
+        <!-- KHỐI FORM LƯU TRỮ -->
+        <div id="form-block" class="hidden">
+            <h2>
+                <span>Nhập Dữ Liệu Thô</span>
+                <span id="user-display" class="user-info"></span>
+            </h2>
             
-            <!-- Trạng thái ẩn danh -->
-            <div id="view-anonymous" class="center-notice">
-                <h2>Không gian lưu trữ mã hóa cá nhân</h2>
-                <p>Vui lòng xác thực Google Mail để hệ thống đồng bộ hóa dữ liệu riêng tư của riêng bạn.</p>
+            <button class="btn-sec" id="btn-logout">Đăng xuất tài khoản</button>
+
+            <div class="form-group">
+                <label for="input-title">Tiêu đề / Danh mục phân loại (Để thô)</label>
+                <input type="text" id="input-title" class="input-text" placeholder="Ví dụ: MatKhauFacebook, Config_Server_01...">
             </div>
 
-            <!-- Trạng thái chưa có dữ liệu -->
-            <div id="view-empty" class="center-notice hidden">
-                <h2>Kho lưu trữ đang trống</h2>
-                <p>Khởi tạo bản ghi đầu tiên bằng cách nhấn nút <b>"+ Thêm Bản Ghi Mới"</b>.</p>
+            <div class="form-group">
+                <label for="input-content">Nội dung dữ liệu (Sẽ mã hóa tự động trước khi gửi)</label>
+                <textarea id="input-content" class="main-editor" placeholder="Dán bất kỳ thông tin nhạy cảm nào vào đây (mã code, tài khoản, tệp...)."></textarea>
             </div>
 
-            <!-- GIAO DIỆN EDIT / CREATE -->
-            <div id="view-editor" class="editor-container hidden">
-                <div class="form-group">
-                    <label for="input-title">Tiêu đề / Danh mục phân loại</label>
-                    <input type="text" id="input-title" class="input-text" placeholder="Ví dụ: Cấu hình Server, Code mẫu Python, Nhật ký công việc...">
-                </div>
-                <div class="form-group">
-                    <label for="input-content">Nội dung chi tiết dữ liệu lớn</label>
-                    <textarea id="input-content" class="main-editor" placeholder="Dán bất kỳ chuỗi ký tự nào vào đây..."></textarea>
-                </div>
-                <div class="btn-group-right">
-                    <button class="btn-sec" id="btn-cancel">Hủy</button>
-                    <button class="btn-teal" id="btn-save-data">Xác Nhận Lưu ⚡</button>
-                </div>
-            </div>
-
-            <!-- GIAO DIỆN XEM CHI TIẾT (READ-ONLY) -->
-            <div id="view-reader" class="viewer-container hidden">
-                <h2 id="render-title" class="viewer-title"></h2>
-                <div id="render-body" class="viewer-content"></div>
-                <div class="btn-group-right" style="margin-top: 25px; padding-top: 15px; border-top: 1px solid var(--border-dark);">
-                    <button class="btn-danger" id="btn-delete-data">Xóa Bản Ghi</button>
-                    <button class="btn-sec" id="btn-edit-data">Sửa Dữ Liệu</button>
-                </div>
-            </div>
-
+            <button class="btn-teal" id="btn-save">Mã hóa & Lưu Lên Database 🚀</button>
+            
+            <a href="display.html" target="_blank" class="nav-link">Đi đến trang hiển thị & tìm kiếm dữ liệu →</a>
         </div>
-    </main>
+    </div>
 
-<!-- FIREBASE ENGINE INTEGRATION -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, deleteDoc, collection, query, orderBy, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, increment } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-    // Sử dụng nguyên cấu hình Firebase của bạn
     const firebaseConfig = {
       apiKey: "AIzaSyDcHZ1RIALvsXC7iRey5y-8ek-j8bFP82U",
       authDomain: "proxyinternetcave.firebaseapp.com",
-      databaseURL: "https://proxyinternetcave-default-rtdb.firebaseio.com",
       projectId: "proxyinternetcave",
       storageBucket: "proxyinternetcave.firebasestorage.app",
       messagingSenderId: "811924386251",
@@ -274,247 +82,54 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    // DOM Bindings
-    const authTrigger = document.getElementById('auth-trigger');
-    const authUser = document.getElementById('auth-user');
-    const userAvatar = document.getElementById('user-avatar');
-    const userName = document.getElementById('user-name');
-    const userEmail = document.getElementById('user-email');
-    const btnLogin = document.getElementById('btn-login');
-    const btnLogout = document.getElementById('btn-logout');
-    
-    const searchInput = document.getElementById('search-input');
-    const dataListContainer = document.getElementById('data-list-container');
-    const navTitle = document.getElementById('nav-title');
-    const btnCreateNew = document.getElementById('btn-create-new');
-
-    const viewAnonymous = document.getElementById('view-anonymous');
-    const viewEmpty = document.getElementById('view-empty');
-    const viewEditor = document.getElementById('view-editor');
-    const viewReader = document.getElementById('view-reader');
-
-    const inputTitle = document.getElementById('input-title');
-    const inputContent = document.getElementById('input-content');
-    const btnSaveData = document.getElementById('btn-save-data');
-    const btnCancel = document.getElementById('btn-cancel');
-
-    const renderTitle = document.getElementById('render-title');
-    const renderBody = document.getElementById('render-body');
-    const btnEditData = document.getElementById('btn-edit-data');
-    const btnDeleteData = document.getElementById('btn-delete-data');
-
-    // Cấu trúc State của App
     let userSession = null;
-    let dataDbCache = []; 
-    let selectedId = null;
-    let snapshotListener = null;
-    let viewCounterCache = {}; // Lưu bộ đếm lượt xem tạm thời ở Client giúp tối ưu hóa luồng tải tài nguyên
 
-    // --- XỬ LÝ AUTH STATE ---
-    btnLogin.addEventListener('click', () => signInWithPopup(auth, provider));
-    btnLogout.addEventListener('click', () => {
-        if(snapshotListener) snapshotListener();
-        signOut(auth);
-    });
+    // Quản lý Đăng nhập / Đăng xuất
+    document.getElementById('btn-login').addEventListener('click', () => signInWithPopup(auth, provider));
+    document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
             userSession = user;
-            authTrigger.classList.add('hidden');
-            authUser.classList.remove('hidden');
-            viewAnonymous.classList.add('hidden');
-            btnCreateNew.classList.remove('hidden');
-            
-            userAvatar.src = user.photoURL || '';
-            userName.textContent = user.displayName;
-            userEmail.textContent = user.email; // Quản lý tường minh theo Email riêng biệt
-
-            syncUserDatabase(user.uid);
+            document.getElementById('auth-block').classList.add('hidden');
+            document.getElementById('form-block').classList.remove('hidden');
+            document.getElementById('user-display').innerHTML = `${user.displayName}<br>${user.email}`;
         } else {
             userSession = null;
-            authTrigger.classList.remove('hidden');
-            authUser.classList.add('hidden');
-            viewAnonymous.classList.remove('hidden');
-            viewEmpty.classList.add('hidden');
-            viewEditor.classList.add('hidden');
-            viewReader.classList.add('hidden');
-            btnCreateNew.classList.add('hidden');
-            dataListContainer.innerHTML = '';
-            navTitle.textContent = "Trạng thái hệ thống";
+            document.getElementById('auth-block').classList.remove('hidden');
+            document.getElementById('form-block').classList.add('hidden');
         }
     });
 
-    // --- UI ROUTER QUẢN LÝ VIEW TRẠNG THÁI ---
-    function routeViewTo(mode) {
-        viewEmpty.classList.add('hidden');
-        viewEditor.classList.add('hidden');
-        viewReader.classList.add('hidden');
+    // Hàm thực thi Luồng Mã hóa và đẩy lên Database
+    document.getElementById('btn-save').addEventListener('click', async () => {
+        const title = document.getElementById('input-title').value.trim();
+        const content = document.getElementById('input-content').value;
 
-        if (mode === 'create') {
-            navTitle.textContent = "Chế độ tạo bản ghi";
-            viewEditor.classList.remove('hidden');
-            inputTitle.value = '';
-            inputContent.value = '';
-            inputTitle.disabled = false;
-            selectedId = null;
-        } else if (mode === 'edit') {
-            navTitle.textContent = `Đang chỉnh sửa: ${selectedId}`;
-            viewEditor.classList.remove('hidden');
-            inputTitle.disabled = true; // Không cho sửa khóa chính (Tiêu đề) để bảo toàn biến đếm đồng nhất
-        } else if (mode === 'read') {
-            navTitle.textContent = "Chế độ đọc dữ liệu";
-            viewReader.classList.remove('hidden');
-        } else if (mode === 'empty') {
-            navTitle.textContent = "Không gian dữ liệu";
-            viewEmpty.classList.remove('hidden');
-        }
-    }
-
-    btnCreateNew.addEventListener('click', () => routeViewTo('create'));
-    btnCancel.addEventListener('click', () => {
-        if(selectedId) routeViewTo('read');
-        else routeViewTo(dataDbCache.length ? 'read' : 'empty');
-    });
-
-    // --- ĐỒNG BỘ DỮ LIỆU CÁ NHÂN (FIRESTORE REALTIME) ---
-    function syncUserDatabase(uid) {
-        // Phân cấp Collection cô lập: users -> {uid_riêng_biệt} -> dataStorage
-        const userStorageRef = collection(db, "users", uid, "dataStorage");
-        const sortedQuery = query(userStorageRef, orderBy("timestamp", "desc"));
-
-        snapshotListener = onSnapshot(sortedQuery, (snapshot) => {
-            dataDbCache = [];
-            if (snapshot.empty) {
-                dataListContainer.innerHTML = '';
-                routeViewTo('empty');
-                return;
-            }
-
-            snapshot.forEach((doc) => {
-                dataDbCache.push({ id: doc.id, ...doc.data() });
-            });
-
-            renderListUI(dataDbCache);
-
-            // Kiểm soát việc giữ tiêu điểm sau khi Database thay đổi trạng thái
-            if (selectedId) {
-                const matchedRecord = dataDbCache.find(item => item.id === selectedId);
-                if (matchedRecord) updateReaderScreen(matchedRecord);
-            } else {
-                selectedId = dataDbCache[0].id;
-                updateReaderScreen(dataDbCache[0]);
-            }
-        }, (err) => {
-            console.error("Lỗi đồng bộ phân vùng bảo mật:", err);
-        });
-    }
-
-    // --- THUẬT TOÁN RENDER & TÌM KIẾM TOÀN VĂN SIÊU TỐC ---
-    function renderListUI(dataArray) {
-        dataListContainer.innerHTML = '';
-        dataArray.forEach(item => {
-            const isActive = selectedId === item.id;
-            const card = document.createElement('div');
-            card.className = `data-card ${isActive ? 'active' : ''}`;
-            
-            // Lấy dòng xem trước của nội dung lớn
-            const textPreview = item.content ? item.content.substring(0, 45) + '...' : '(Trống)';
-            
-            // Khởi tạo biến đếm cục bộ nếu chưa có
-            if(!viewCounterCache[item.id]) viewCounterCache[item.id] = 0;
-
-            card.innerHTML = `
-                <div class="card-header-flex">
-                    <span class="card-title" title="${item.id}">${item.id}</span>
-                </div>
-                <div class="card-preview">${textPreview}</div>
-                <div class="counter-group">
-                    <span class="badge badge-update">Lưu đè: ${item.updateCount || 1} lần</span>
-                    <span class="badge badge-view">Đã xem: ${viewCounterCache[item.id]}</span>
-                </div>
-            `;
-
-            card.addEventListener('click', () => {
-                selectedId = item.id;
-                document.querySelectorAll('.data-card').forEach(el => el.classList.remove('active'));
-                card.classList.add('active');
-                
-                // Tăng bộ đếm lượt xem Client-side ngay lập tức, không tốn tài nguyên mạng
-                viewCounterCache[item.id] += 1;
-                
-                updateReaderScreen(item);
-            });
-
-            dataListContainer.appendChild(card);
-        });
-    }
-
-    // Xử lý tìm kiếm tối ưu hóa tốc độ cao trên bộ nhớ tạm (In-Memory Search)
-    searchInput.addEventListener('input', (e) => {
-        const queryStr = e.target.value.toLowerCase().trim();
-        // Tìm song song cả ở Tiêu đề lẫn Nội dung văn bản lớn bên trong bản ghi
-        const matchResults = dataDbCache.filter(item => 
-            item.id.toLowerCase().includes(queryStr) || 
-            item.content.toLowerCase().includes(queryStr)
-        );
-        renderListUI(matchResults);
-    });
-
-    function updateReaderScreen(item) {
-        renderTitle.textContent = item.id;
-        renderBody.textContent = item.content;
-        routeViewTo('read');
-    }
-
-    // --- CRUD ENGINE: CREATE / UPDATE ---
-    btnSaveData.addEventListener('click', async () => {
-        const titleStr = inputTitle.value.trim();
-        const contentStr = inputContent.value;
-
-        if (!titleStr || !contentStr.trim()) {
-            alert("Vui lòng điền đầy đủ cả tiêu đề lẫn nội dung!");
+        if (!title || !content.trim()) {
+            alert("Không được để trống thông tin dữ liệu!");
             return;
         }
 
         try {
-            const dataDocRef = doc(db, "users", userSession.uid, "dataStorage", titleStr);
-            const isUpdate = (selectedId === titleStr);
+            // Bước quan trọng: Tiến hành mã hóa AES cục bộ sử dụng UID làm chìa khóa bí mật
+            const secretKey = userSession.uid;
+            const encryptedContent = CryptoJS.AES.encrypt(content, secretKey).toString();
 
-            await setDoc(dataDocRef, {
-                content: contentStr,
-                updateCount: isUpdate ? increment(1) : increment(0), // Tăng số lần dán đè/sửa đổi lên +1
+            // Đẩy dữ liệu đã mã hóa lên Firestore theo cấu trúc cô lập email khách
+            const docRef = doc(db, "users", userSession.uid, "dataStorage", title);
+            await setDoc(docRef, {
+                content: encryptedContent, // Firebase chỉ thấy đống ký tự lộn xộn này
+                isEncrypted: true,
+                updateCount: increment(1),
                 timestamp: new Date()
             }, { merge: true });
 
-            selectedId = titleStr;
-            alert("Hệ thống đã lưu trữ và đồng bộ hóa thành công!");
-        } catch (err) {
-            alert("Lỗi phân vùng: " + err.message);
-        }
-    });
-
-    // --- CRUD ENGINE: EDIT & DELETE ---
-    btnEditData.addEventListener('click', () => {
-        const record = dataDbCache.find(item => item.id === selectedId);
-        if (record) {
-            inputTitle.value = record.id;
-            inputContent.value = record.content;
-            routeViewTo('edit');
-        }
-    });
-
-    btnDeleteData.addEventListener('click', async () => {
-        if (!selectedId) return;
-        if (confirm(`Xác nhận xóa vĩnh viễn danh mục "${selectedId}" khỏi máy chủ?`)) {
-            try {
-                const dataDocRef = doc(db, "users", userSession.uid, "dataStorage", selectedId);
-                await deleteDoc(dataDocRef);
-                delete viewCounterCache[selectedId]; // Giải phóng bộ nhớ đếm tạm
-                selectedId = null;
-                alert("Đã xóa bản ghi thành công.");
-            } catch (err) {
-                alert("Lỗi xóa bản ghi: " + err.message);
-            }
+            alert("Đã mã hóa đầu cuối và đồng bộ thành công!");
+            document.getElementById('input-title').value = '';
+            document.getElementById('input-content').value = '';
+        } catch (error) {
+            alert("Lỗi lưu trữ dữ liệu mã hóa: " + error.message);
         }
     });
 </script>
