@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VLBAOVE - Quản lý Công trường</title>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+        
+        :root {
+            --primary: #1e88e5;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 260px;
+            background: #1e3a8a;
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            height: 100%;
+            overflow-y: auto;
+        }
+        .logo {
+            padding: 20px;
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .menu-item {
+            padding: 15px 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+        }
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255,255,255,0.2);
+        }
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 20px;
+        }
+        .header {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .login-screen {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+        }
+        .login-card {
+            background: white;
+            color: #333;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+        .btn-google {
+            background: #fff;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px auto;
+            transition: all 0.3s;
+        }
+        .btn-google:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #1e3a8a;
+            color: white;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-primary {
+            background: #1e88e5;
+            color: white;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Màn hình Login -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-card">
+            <h1>VLBAOVE Work</h1>
+            <p style="margin: 15px 0 25px;">Quản lý đường sá, công nhân & hàng hóa</p>
+            <button onclick="loginWithGoogle()" class="btn-google">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/2048px-Google_%22G%22_logo.svg.png" width="24" height="24" alt="Google">
+                Đăng nhập bằng Google
+            </button>
+            <p style="font-size: 14px; color: #666; margin-top: 20px;">
+                Chỉ thành viên được phép truy cập
+            </p>
+        </div>
+    </div>
+
+    <!-- Ứng dụng chính -->
+    <div id="app" class="container hidden">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">🚧 VLBAOVE</div>
+            <div onclick="showSection('dashboard')" class="menu-item active" id="menu-dashboard">
+                📊 Dashboard
+            </div>
+            <div onclick="showSection('roads')" class="menu-item" id="menu-roads">
+                🛣️ Đường sá
+            </div>
+            <div onclick="showSection('workers')" class="menu-item" id="menu-workers">
+                👷 Công nhân
+            </div>
+            <div onclick="showSection('shipments')" class="menu-item" id="menu-shipments">
+                📦 Hàng hóa xuất đi
+            </div>
+            <div style="position: absolute; bottom: 30px; left: 25px; right: 25px;">
+                <div class="user-info" style="color: white; font-size: 14px;">
+                    <div id="userAvatar" style="width: 40px; height: 40px; background: #ddd; border-radius: 50%; overflow: hidden;"></div>
+                    <div>
+                        <div id="userName" style="font-weight: 500;"></div>
+                        <div onclick="logout()" style="cursor: pointer; font-size: 13px; opacity: 0.8;">Đăng xuất</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h2 id="pageTitle">Dashboard</h2>
+                <div id="userHeader" style="display: flex; align-items: center; gap: 10px;"></div>
+            </div>
+
+            <!-- Dashboard -->
+            <div id="dashboardSection">
+                <div class="card">
+                    <h3>Tổng quan hôm nay</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 20px;">
+                        <div style="background: #e3f2fd; padding: 20px; border-radius: 8px;">
+                            <div style="font-size: 32px; font-weight: 700; color: #1e88e5;" id="totalRoads">12</div>
+                            <div>Con đường đang quản lý</div>
+                        </div>
+                        <div style="background: #e8f5e9; padding: 20px; border-radius: 8px;">
+                            <div style="font-size: 32px; font-weight: 700; color: #43a047;" id="totalWorkers">48</div>
+                            <div>Công nhân</div>
+                        </div>
+                        <div style="background: #fff3e0; padding: 20px; border-radius: 8px;">
+                            <div style="font-size: 32px; font-weight: 700; color: #f57c00;" id="totalShipments">27</div>
+                            <div>Lô hàng đã xuất</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quản lý Đường -->
+            <div id="roadsSection" class="hidden">
+                <div class="card">
+                    <h3>Thêm / Sửa Đường</h3>
+                    <div class="form-group">
+                        <label>Tên đường</label>
+                        <input type="text" id="roadName" placeholder="Đường Nguyễn Tất Thành">
+                    </div>
+                    <div class="form-group">
+                        <label>Vị trí / Khu vực</label>
+                        <input type="text" id="roadLocation" placeholder="Quận 1, TP.HCM">
+                    </div>
+                    <div class="form-group">
+                        <label>Trạng thái</label>
+                        <select id="roadStatus">
+                            <option value="Đang thi công">Đang thi công</option>
+                            <option value="Hoàn thành">Hoàn thành</option>
+                            <option value="Bảo trì">Bảo trì</option>
+                        </select>
+                    </div>
+                    <button onclick="saveRoad()" class="btn btn-primary">Lưu Đường</button>
+                </div>
+
+                <div class="card">
+                    <h3>Danh sách Đường</h3>
+                    <table id="roadsTable">
+                        <thead>
+                            <tr>
+                                <th>Tên đường</th>
+                                <th>Vị trí</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Quản lý Công nhân -->
+            <div id="workersSection" class="hidden">
+                <div class="card">
+                    <h3>Thêm Công nhân</h3>
+                    <div class="form-group">
+                        <label>Họ tên</label>
+                        <input type="text" id="workerName" placeholder="Nguyễn Văn A">
+                    </div>
+                    <div class="form-group">
+                        <label>Số điện thoại</label>
+                        <input type="text" id="workerPhone" placeholder="0912345678">
+                    </div>
+                    <div class="form-group">
+                        <label>Đường phụ trách</label>
+                        <input type="text" id="workerRoad" placeholder="Đường Nguyễn Tất Thành">
+                    </div>
+                    <button onclick="saveWorker()" class="btn btn-primary">Lưu Công nhân</button>
+                </div>
+
+                <div class="card">
+                    <h3>Danh sách Công nhân</h3>
+                    <table id="workersTable">
+                        <thead>
+                            <tr>
+                                <th>Họ tên</th>
+                                <th>SĐT</th>
+                                <th>Đường phụ trách</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Quản lý Hàng hóa -->
+            <div id="shipmentsSection" class="hidden">
+                <div class="card">
+                    <h3>Xuất hàng hóa</h3>
+                    <div class="form-group">
+                        <label>Tên hàng hóa</label>
+                        <input type="text" id="shipmentName" placeholder="Cát xây dựng">
+                    </div>
+                    <div class="form-group">
+                        <label>Số lượng</label>
+                        <input type="text" id="shipmentQty" placeholder="120 tấn">
+                    </div>
+                    <div class="form-group">
+                        <label>Đường nhận</label>
+                        <input type="text" id="shipmentRoad" placeholder="Đường Nguyễn Tất Thành">
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày xuất</label>
+                        <input type="date" id="shipmentDate">
+                    </div>
+                    <button onclick="saveShipment()" class="btn btn-primary">Xuất hàng</button>
+                </div>
+
+                <div class="card">
+                    <h3>Lịch sử xuất hàng</h3>
+                    <table id="shipmentsTable">
+                        <thead>
+                            <tr>
+                                <th>Hàng hóa</th>
+                                <th>Số lượng</th>
+                                <th>Đường</th>
+                                <th>Ngày</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === Firebase Config ===
+        const firebaseConfig = {
+          apiKey: "AIzaSyB_fB6fPUZH4uJVpK9pzkjs7DP07kNW2MU",
+          authDomain: "vlbaovework.firebaseapp.com",
+          databaseURL: "https://vlbaovework-default-rtdb.firebaseio.com",
+          projectId: "vlbaovework",
+          storageBucket: "vlbaovework.firebasestorage.app",
+          messagingSenderId: "478788881372",
+          appId: "1:478788881372:web:6cb344578dadebd40c9d19"
+        };
+
+        // Khởi tạo Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        let currentUser = null;
+
+        // Đăng nhập Google
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    console.log("Đăng nhập thành công");
+                })
+                .catch((error) => {
+                    console.error("Lỗi đăng nhập:", error);
+                    alert("Đăng nhập thất bại: " + error.message);
+                });
+        }
+
+        function logout() {
+            if (confirm("Bạn có chắc muốn đăng xuất?")) {
+                auth.signOut().then(() => {
+                    document.getElementById('app').classList.add('hidden');
+                    document.getElementById('loginScreen').classList.remove('hidden');
+                });
+            }
+        }
+
+        // Theo dõi trạng thái đăng nhập
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                
+                // Hiển thị thông tin user
+                document.getElementById('userName').textContent = user.displayName || "Người dùng";
+                const avatarDiv = document.getElementById('userAvatar');
+                if (user.photoURL) {
+                    avatarDiv.innerHTML = `<img src="${user.photoURL}" width="40" height="40" style="border-radius:50%;">`;
+                }
+                
+                loadAllData();
+            } else {
+                document.getElementById('app').classList.add('hidden');
+                document.getElementById('loginScreen').classList.remove('hidden');
+            }
+        });
+
+        // Chuyển tab
+        function showSection(section) {
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+            document.getElementById(`menu-${section}`).classList.add('active');
+            
+            document.getElementById('pageTitle').textContent = {
+                'dashboard': 'Dashboard',
+                'roads': 'Quản lý Đường sá',
+                'workers': 'Quản lý Công nhân',
+                'shipments': 'Quản lý Hàng hóa'
+            }[section];
+
+            // Ẩn tất cả section
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('roadsSection').classList.add('hidden');
+            document.getElementById('workersSection').classList.add('hidden');
+            document.getElementById('shipmentsSection').classList.add('hidden');
+            
+            // Hiện section được chọn
+            document.getElementById(section + 'Section').classList.remove('hidden');
+        }
+
+        // === Đường ===
+        function saveRoad() {
+            const name = document.getElementById('roadName').value.trim();
+            const location = document.getElementById('roadLocation').value.trim();
+            const status = document.getElementById('roadStatus').value;
+            
+            if (!name) return alert("Vui lòng nhập tên đường");
+            
+            const roadRef = db.ref('roads').push();
+            roadRef.set({
+                id: roadRef.key,
+                name: name,
+                location: location,
+                status: status,
+                createdBy: currentUser.email,
+                timestamp: Date.now()
+            }).then(() => {
+                alert("Lưu đường thành công!");
+                clearRoadForm();
+                loadRoads();
+            });
+        }
+
+        function clearRoadForm() {
+            document.getElementById('roadName').value = '';
+            document.getElementById('roadLocation').value = '';
+        }
+
+        function loadRoads() {
+            const tbody = document.querySelector('#roadsTable tbody');
+            tbody.innerHTML = '';
+            
+            db.ref('roads').once('value', (snapshot) => {
+                let count = 0;
+                snapshot.forEach(child => {
+                    const road = child.val();
+                    count++;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${road.name}</td>
+                        <td>${road.location || ''}</td>
+                        <td><span style="padding:4px 10px; border-radius:20px; background:${road.status==='Hoàn thành'?'#c8e6c9': road.status==='Đang thi công'?'#e3f2fd':'#fff3e0'}">${road.status}</span></td>
+                        <td><button onclick="deleteItem('roads', '${road.id}')" style="color:red; background:none; border:none; cursor:pointer;">Xóa</button></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                document.getElementById('totalRoads').textContent = count;
+            });
+        }
+
+        // === Công nhân ===
+        function saveWorker() {
+            const name = document.getElementById('workerName').value.trim();
+            const phone = document.getElementById('workerPhone').value.trim();
+            const road = document.getElementById('workerRoad').value.trim();
+            
+            if (!name) return alert("Vui lòng nhập họ tên");
+            
+            const workerRef = db.ref('workers').push();
+            workerRef.set({
+                id: workerRef.key,
+                name: name,
+                phone: phone,
+                road: road,
+                createdBy: currentUser.email,
+                timestamp: Date.now()
+            }).then(() => {
+                alert("Lưu công nhân thành công!");
+                clearWorkerForm();
+                loadWorkers();
+            });
+        }
+
+        function clearWorkerForm() {
+            document.getElementById('workerName').value = '';
+            document.getElementById('workerPhone').value = '';
+            document.getElementById('workerRoad').value = '';
+        }
+
+        function loadWorkers() {
+            const tbody = document.querySelector('#workersTable tbody');
+            tbody.innerHTML = '';
+            
+            db.ref('workers').once('value', (snapshot) => {
+                let count = 0;
+                snapshot.forEach(child => {
+                    const worker = child.val();
+                    count++;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${worker.name}</td>
+                        <td>${worker.phone || ''}</td>
+                        <td>${worker.road || ''}</td>
+                        <td><button onclick="deleteItem('workers', '${worker.id}')" style="color:red; background:none; border:none; cursor:pointer;">Xóa</button></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                document.getElementById('totalWorkers').textContent = count;
+            });
+        }
+
+        // === Hàng hóa ===
+        function saveShipment() {
+            const name = document.getElementById('shipmentName').value.trim();
+            const qty = document.getElementById('shipmentQty').value.trim();
+            const road = document.getElementById('shipmentRoad').value.trim();
+            const date = document.getElementById('shipmentDate').value;
+            
+            if (!name || !qty) return alert("Vui lòng nhập đầy đủ thông tin hàng hóa");
+            
+            const shipmentRef = db.ref('shipments').push();
+            shipmentRef.set({
+                id: shipmentRef.key,
+                name: name,
+                qty: qty,
+                road: road,
+                date: date || new Date().toISOString().split('T')[0],
+                createdBy: currentUser.email,
+                timestamp: Date.now()
+            }).then(() => {
+                alert("Xuất hàng thành công!");
+                clearShipmentForm();
+                loadShipments();
+            });
+        }
+
+        function clearShipmentForm() {
+            document.getElementById('shipmentName').value = '';
+            document.getElementById('shipmentQty').value = '';
+            document.getElementById('shipmentRoad').value = '';
+        }
+
+        function loadShipments() {
+            const tbody = document.querySelector('#shipmentsTable tbody');
+            tbody.innerHTML = '';
+            
+            db.ref('shipments').orderByChild('timestamp').once('value', (snapshot) => {
+                let count = 0;
+                snapshot.forEach(child => {
+                    const s = child.val();
+                    count++;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${s.name}</td>
+                        <td>${s.qty}</td>
+                        <td>${s.road || ''}</td>
+                        <td>${s.date}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                document.getElementById('totalShipments').textContent = count;
+            });
+        }
+
+        function deleteItem(collection, id) {
+            if (confirm("Xóa mục này?")) {
+                db.ref(collection + '/' + id).remove().then(() => {
+                    loadAllData();
+                });
+            }
+        }
+
+        function loadAllData() {
+            loadRoads();
+            loadWorkers();
+            loadShipments();
+        }
+
+        // Khởi tạo mặc định
+        window.onload = () => {
+            // Set ngày hôm nay cho form xuất hàng
+            const today = new Date().toISOString().split('T')[0];
+            if (document.getElementById('shipmentDate')) {
+                document.getElementById('shipmentDate').value = today;
+            }
+            
+            // Mặc định hiển thị dashboard
+            showSection('dashboard');
+        };
+    </script>
+</body>
+</html>
